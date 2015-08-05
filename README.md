@@ -2,6 +2,8 @@
 
 A library intended to take away some of the cruft and tediousness of using the Android BLE library.
 
+Note: Undergoing re-development offline, due to some strange Android errors.
+
 License
 -------
 
