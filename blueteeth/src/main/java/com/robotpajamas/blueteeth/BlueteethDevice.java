@@ -3,7 +3,7 @@ package com.robotpajamas.blueteeth;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 
-import com.robotpajamas.blueteeth.Callback.ConnectionCallback;
+import com.robotpajamas.blueteeth.Callback.onConnection;
 import com.robotpajamas.blueteeth.Callback.ServicesDiscoveredCallback;
 
 /**
@@ -17,7 +17,7 @@ public class BlueteethDevice {
         bluetoothDevice = device;
     }
 
-    public void connect(ConnectionCallback callback) {
+    public void connect(onConnection callback) {
         BlueteethManager.getInstance().connect(this, callback);
     }
 

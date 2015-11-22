@@ -9,11 +9,12 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
 
-import com.robotpajamas.blueteeth.Callback.ConnectionCallback;
-import com.robotpajamas.blueteeth.Callback.ReadCallback;
-import com.robotpajamas.blueteeth.Callback.ScanCallback;
+import com.robotpajamas.blueteeth.Callback.onConnection;
+import com.robotpajamas.blueteeth.Callback.onCharacteristicRead;
+import com.robotpajamas.blueteeth.Callback.onScanCompleted;
 import com.robotpajamas.blueteeth.Callback.ServicesDiscoveredCallback;
-import com.robotpajamas.blueteeth.Callback.WriteCallback;
+import com.robotpajamas.blueteeth.Callback.onCharacteristicWrite;
+import com.robotpajamas.blueteeth.Callback.onScanResponse;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -33,11 +34,11 @@ public class BlueteethManager {
     private Handler mHandler = new Handler();
 
     private List<BlueteethDevice> mScannedDevices = new ArrayList<>();
-    private Queue<ScanCallback> mScanCallbackQueue = new LinkedList<>();
-    private Queue<ConnectionCallback> mConnectionCallbackQueue = new LinkedList<>();
+    private Queue<onScanCompleted> mScanCallbackQueue = new LinkedList<>();
+    private Queue<onConnection> mConnectionCallbackQueue = new LinkedList<>();
     private Queue<ServicesDiscoveredCallback> mServicesDiscoveredCallbackQueue = new LinkedList<>();
-    private Queue<ReadCallback> mReadCallbackQueue = new LinkedList<>();
-    private Queue<WriteCallback> mWriteCallbackQueue = new LinkedList<>();
+    private Queue<onCharacteristicRead> mReadCallbackQueue = new LinkedList<>();
+    private Queue<onCharacteristicWrite> mWriteCallbackQueue = new LinkedList<>();
 
     private static BlueteethManager singleton = null;
     Context context;
@@ -84,18 +85,26 @@ public class BlueteethManager {
         mScannedDevices.add(device);
     }
 
-    public void scanForDevices(ScanCallback callback) {
+    public void scanForDevices(final int timeout, onScanResponse scanResponse, onScanCompleted scanCompleted) {
+        scanForDevices(timeout, scanCompleted);
+    }
+
+    public void scanForDevices(onScanCompleted scanCompleted) {
+        scanForDevices(5000, scanCompleted);
+    }
+
+    public void scanForDevices(final int timeout, onScanCompleted scanCompleted) {
         mScannedDevices.clear();
-        mScanCallbackQueue.add(callback);
-        beginScan(3000);
+        mScanCallbackQueue.add(scanCompleted);
+        beginScan(timeout);
     }
 
     protected void scanComplete() {
-        ScanCallback callback = mScanCallbackQueue.remove();
+        onScanCompleted callback = mScanCallbackQueue.remove();
         callback.call(mScannedDevices);
     }
 
-    public void connect(BlueteethDevice device, ConnectionCallback callback) {
+    public void connect(BlueteethDevice device, onConnection callback) {
         mConnectionCallbackQueue.add(callback);
 
         if (device.gatt != null) {
@@ -125,7 +134,7 @@ public class BlueteethManager {
         mScannedDevices.clear();
     }
 
-    public void readCharacteristic(UUID characteristic, UUID service, BlueteethDevice device, ReadCallback callback) {
+    public void readCharacteristic(UUID characteristic, UUID service, BlueteethDevice device, onCharacteristicRead callback) {
         BluetoothGatt gatt = device.gatt;
         if (gatt == null) {
             return;
@@ -137,7 +146,7 @@ public class BlueteethManager {
         gatt.readCharacteristic(gattCharacteristic);
     }
 
-    public void writeCharacteristic(byte[] data, UUID characteristic, UUID service, BlueteethDevice device, WriteCallback callback) {
+    public void writeCharacteristic(byte[] data, UUID characteristic, UUID service, BlueteethDevice device, onCharacteristicWrite callback) {
         BluetoothGatt gatt = device.gatt;
         if (gatt == null) {
             return;
@@ -177,7 +186,6 @@ public class BlueteethManager {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
 
-
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 mServicesDiscoveredCallbackQueue.remove().call();
             }
@@ -186,14 +194,12 @@ public class BlueteethManager {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-
             mReadCallbackQueue.remove().call(characteristic.getValue());
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
-
             mWriteCallbackQueue.remove().call();
         }
     };
