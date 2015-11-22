@@ -1,10 +1,10 @@
-package com.robotpajamas.android.ble113_ota.Blueteeth;
+package com.robotpajamas.blueteeth;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 
-import com.robotpajamas.android.ble113_ota.Blueteeth.Callback.ConnectionCallback;
-import com.robotpajamas.android.ble113_ota.Blueteeth.Callback.ServicesDiscoveredCallback;
+import com.robotpajamas.blueteeth.Callback.ConnectionCallback;
+import com.robotpajamas.blueteeth.Callback.ServicesDiscoveredCallback;
 
 /**
  * Created by sureshjoshi on 15-03-08.

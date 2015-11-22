@@ -1,7 +1,8 @@
-package com.robotpajamas.android.ble113_ota.Blueteeth;
+package com.robotpajamas.blueteeth;
 
-import com.robotpajamas.android.ble113_ota.Blueteeth.Callback.ReadCallback;
-import com.robotpajamas.android.ble113_ota.Blueteeth.Callback.WriteCallback;
+
+import com.robotpajamas.blueteeth.Callback.ReadCallback;
+import com.robotpajamas.blueteeth.Callback.WriteCallback;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package com.robotpajamas.android.ble113_ota.Blueteeth;
+package com.robotpajamas.blueteeth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
@@ -9,11 +9,11 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
 
-import com.robotpajamas.android.ble113_ota.Blueteeth.Callback.ConnectionCallback;
-import com.robotpajamas.android.ble113_ota.Blueteeth.Callback.ReadCallback;
-import com.robotpajamas.android.ble113_ota.Blueteeth.Callback.ScanCallback;
-import com.robotpajamas.android.ble113_ota.Blueteeth.Callback.ServicesDiscoveredCallback;
-import com.robotpajamas.android.ble113_ota.Blueteeth.Callback.WriteCallback;
+import com.robotpajamas.blueteeth.Callback.ConnectionCallback;
+import com.robotpajamas.blueteeth.Callback.ReadCallback;
+import com.robotpajamas.blueteeth.Callback.ScanCallback;
+import com.robotpajamas.blueteeth.Callback.ServicesDiscoveredCallback;
+import com.robotpajamas.blueteeth.Callback.WriteCallback;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -22,7 +22,6 @@ import java.util.Queue;
 import java.util.UUID;
 
 import timber.log.Timber;
-
 
 public class BlueteethManager {
 

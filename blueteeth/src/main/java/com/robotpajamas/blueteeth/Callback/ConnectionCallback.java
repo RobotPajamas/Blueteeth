@@ -1,4 +1,4 @@
-package com.robotpajamas.android.ble113_ota.Blueteeth.Callback;
+package com.robotpajamas.blueteeth.Callback;
 
 /**
  * Created by sureshjoshi on 15-03-08.

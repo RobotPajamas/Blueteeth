@@ -1,4 +1,4 @@
-package com.robotpajamas.android.ble113_ota.Blueteeth.Callback;
+package com.robotpajamas.blueteeth.Callback;
 
 public interface ReadCallback {
     public void call(byte[] data);
