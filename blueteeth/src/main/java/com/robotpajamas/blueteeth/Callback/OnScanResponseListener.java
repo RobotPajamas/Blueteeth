@@ -4,6 +4,6 @@ import com.robotpajamas.blueteeth.BlueteethDevice;
 
 import java.util.List;
 
-public interface onScanResponse {
-    void call(List<BlueteethDevice> bleDevices);
+public interface OnScanResponseListener {
+    void onScanResponse(List<BlueteethDevice> blueteethDevices);
 }
