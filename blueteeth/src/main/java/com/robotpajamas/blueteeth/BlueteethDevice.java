@@ -4,11 +4,16 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.robotpajamas.blueteeth.Callback.OnCharacteristicReadListener;
 import com.robotpajamas.blueteeth.Callback.OnConnectionChangedListener;
 import com.robotpajamas.blueteeth.Callback.OnServicesDiscoveredListener;
+
+import java.util.UUID;
 
 import timber.log.Timber;
 
@@ -20,8 +25,12 @@ public class BlueteethDevice {
 
     @Nullable
     private OnConnectionChangedListener mConnectionChangedListener;
+
     @Nullable
     private OnServicesDiscoveredListener mServicesDiscoveredListener;
+
+    @Nullable
+    private OnCharacteristicReadListener mCharacteristicReadListener;
 
     private final String mMacAddress;
     private boolean mIsConnected;
@@ -44,6 +53,11 @@ public class BlueteethDevice {
     }
 
     public void connect(OnConnectionChangedListener onConnectionChangedListener) {
+//        if (mBluetoothGatt != null) {
+//            Timber.e("Bluetooth GATT is null");
+//            return;
+//        }
+
         mConnectionChangedListener = onConnectionChangedListener;
 
         // TODO: Passing in a null context seems to work, but what are the consequences?
@@ -52,19 +66,40 @@ public class BlueteethDevice {
     }
 
     public void disconnect(OnConnectionChangedListener onConnectionChangedListener) {
-        if (mBluetoothGatt != null) {
-            mConnectionChangedListener = onConnectionChangedListener;
-            mBluetoothGatt.disconnect();
+        if (mBluetoothGatt == null) {
+            return;
         }
+        mConnectionChangedListener = onConnectionChangedListener;
+        mBluetoothGatt.disconnect();
     }
 
     public boolean discoverServices(OnServicesDiscoveredListener onServicesDiscoveredListener) {
-        if (mIsConnected && mBluetoothGatt != null) {
-            mServicesDiscoveredListener = onServicesDiscoveredListener;
-            mBluetoothGatt.discoverServices();
-            return true;
+        if (!mIsConnected || mBluetoothGatt == null) {
+            return false;
         }
-        return false;
+        mServicesDiscoveredListener = onServicesDiscoveredListener;
+        mBluetoothGatt.discoverServices();
+        return true;
+    }
+
+    public boolean readCharacteristic(@NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicReadListener onCharacteristicReadListener) {
+        if (!mIsConnected || mBluetoothGatt == null) {
+            return false;
+        }
+        mCharacteristicReadListener = onCharacteristicReadListener;
+        BluetoothGattService gattService = mBluetoothGatt.getService(service);
+        if (gattService == null) {
+            Timber.e("Service not available - %s", service.toString());
+            return false;
+        }
+
+        BluetoothGattCharacteristic gattCharacteristic = gattService.getCharacteristic(characteristic);
+        if (gattCharacteristic == null) {
+            Timber.e("Characteristic not available - %s", characteristic.toString());
+            return false;
+        }
+
+        return mBluetoothGatt.readCharacteristic(gattCharacteristic);
     }
 
     public void close() {
@@ -139,7 +174,9 @@ public class BlueteethDevice {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
             Timber.d("OnCharacteristicReadListener - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
-//            mReadCallbackQueue.remove().onServicesDiscovered(characteristic.getValue());
+            if (mCharacteristicReadListener != null) {
+                mCharacteristicReadListener.onCharacteristicRead(characteristic.getValue());
+            }
         }
 
         @Override

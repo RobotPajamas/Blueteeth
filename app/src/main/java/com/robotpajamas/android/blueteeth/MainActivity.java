@@ -87,6 +87,8 @@ public class MainActivity extends ListActivity {
             mSwipeRefresh.setRefreshing(false);
             for (BlueteethDevice device : bleDevices) {
                 if (!TextUtils.isEmpty(device.getBluetoothDevice().getName())) {
+                    Timber.e(device.getBluetoothDevice().getName());
+                    Timber.e(device.getBluetoothDevice().getAddress());
                     mAdapter.add(device.getBluetoothDevice().getName());
                 }
             }
