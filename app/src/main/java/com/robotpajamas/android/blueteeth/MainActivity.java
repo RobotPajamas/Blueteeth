@@ -8,14 +8,11 @@ import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.robotpajamas.blueteeth.BlueteethDevice;
 import com.robotpajamas.blueteeth.BlueteethManager;
-
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -27,7 +24,7 @@ public class MainActivity extends ListActivity {
 
     @Bind(R.id.swiperefresh)
     SwipeRefreshLayout mSwipeRefresh;
-    private ArrayAdapter<String> mAdapter;
+    private DeviceScanListAdapter mDeviceAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,17 +39,15 @@ public class MainActivity extends ListActivity {
         checkBluetoothSupport();
 
         mSwipeRefresh.setOnRefreshListener(this::startScanning);
-
-        // Setup the device array adapter
-        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        setListAdapter(mAdapter);
+        mDeviceAdapter = new DeviceScanListAdapter(this);
+        setListAdapter(mDeviceAdapter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        mAdapter.clear();
+        mDeviceAdapter.clear();
 
         // Start automatic scan
         mSwipeRefresh.setRefreshing(true);
@@ -70,9 +65,7 @@ public class MainActivity extends ListActivity {
         super.onListItemClick(listView, view, position, id);
         stopScanning();
 
-        List<BlueteethDevice> blueteethDevices = BlueteethManager.with(this).getPeripherals();
-        BlueteethDevice blueteethDevice = blueteethDevices.get(position);
-
+        BlueteethDevice blueteethDevice = mDeviceAdapter.getItem(position);
         final Intent intent = new Intent(this, DeviceActivity.class);
         intent.putExtra(getString(R.string.extra_mac_address), blueteethDevice.getMacAddress());
         startActivity(intent);
@@ -81,15 +74,14 @@ public class MainActivity extends ListActivity {
     private void startScanning() {
         // Clear existing devices (assumes none are connected)
         Timber.d("Start scanning");
-        mAdapter.clear();
+        mDeviceAdapter.clear();
         BlueteethManager.with(this).scanForPeripherals(DEVICE_SCAN_MILLISECONDS, bleDevices -> {
             Timber.d("On Scan completed");
             mSwipeRefresh.setRefreshing(false);
             for (BlueteethDevice device : bleDevices) {
                 if (!TextUtils.isEmpty(device.getBluetoothDevice().getName())) {
-                    Timber.e(device.getBluetoothDevice().getName());
-                    Timber.e(device.getBluetoothDevice().getAddress());
-                    mAdapter.add(device.getBluetoothDevice().getName());
+                    Timber.d("%s - %s", device.getName(), device.getMacAddress());
+                    mDeviceAdapter.add(device);
                 }
             }
         });

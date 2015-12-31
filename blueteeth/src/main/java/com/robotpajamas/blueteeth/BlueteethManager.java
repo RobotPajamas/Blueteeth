@@ -8,14 +8,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.robotpajamas.blueteeth.Callback.OnScanCompletedListener;
-import com.robotpajamas.blueteeth.Callback.OnServicesDiscoveredListener;
-import com.robotpajamas.blueteeth.Callback.OnCharacteristicReadListener;
-import com.robotpajamas.blueteeth.Callback.OnCharacteristicWriteListener;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import timber.log.Timber;
 
@@ -23,14 +18,7 @@ public class BlueteethManager {
 
     private BluetoothAdapter mBLEAdapter;
     private Handler mHandler = new Handler();
-
-    private Queue<OnServicesDiscoveredListener> mServicesDiscoveredCallbackQueue = new LinkedList<>();
-    private Queue<OnCharacteristicReadListener> mReadCallbackQueue = new LinkedList<>();
-    private Queue<OnCharacteristicWriteListener> mWriteCallbackQueue = new LinkedList<>();
-
-    private final Context mContext;
     static volatile BlueteethManager singleton = null;
-
 
     private boolean mIsScanning;
 
@@ -77,12 +65,26 @@ public class BlueteethManager {
         return singleton;
     }
 
+    /**
+     * Controls the level of logging.
+     */
+    public enum LogLevel {
+        None,
+        Debug;
+
+        public boolean log() {
+            return this != None;
+        }
+    }
+
+    private LogLevel mLogLevel = LogLevel.None;
+
     BlueteethManager(Context applicationContext) {
         // Grab the application context in case an activity context was passed in
-        mContext = applicationContext.getApplicationContext();
+        Context context = applicationContext.getApplicationContext();
 
         Timber.d("Initializing BluetoothManager");
-        BluetoothManager bleManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothManager bleManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         if (bleManager == null) {
             Timber.e("Unable to initialize BluetoothManager.");
             throw new RuntimeException();
@@ -100,7 +102,6 @@ public class BlueteethManager {
             throw new RuntimeException();
         }
     }
-
 
     /**
      * Scans for nearby peripherals and fills the mScannedPeripherals ArrayList.
@@ -128,14 +129,14 @@ public class BlueteethManager {
     }
 
     private void clearPeripherals() {
-        // Ensure we correclty handle resources
+        // TODO: Need to be a bit clever about how these are handled
+        // TODO: If this is the last reference, close it, otherwise don't?
         for (BlueteethDevice blueteethDevice : mScannedPeripherals) {
             blueteethDevice.close();
         }
 
         mScannedPeripherals.clear();
     }
-
 
     /**
      * Stops ongoing scan process
@@ -151,48 +152,7 @@ public class BlueteethManager {
         }
     }
 
-
-//    public void readCharacteristic(UUID characteristic, UUID service, BlueteethDevice device, OnCharacteristicReadListener callback) {
-//        BluetoothGatt gatt = device.gatt;
-//        if (gatt == null) {
-//            return;
-//        }
-//
-//        mReadCallbackQueue.add(callback);
-//
-//        BluetoothGattCharacteristic gattCharacteristic = gatt.getService(service).getCharacteristic(characteristic);
-//        gatt.readCharacteristic(gattCharacteristic);
-//    }
-//
-//    public void writeCharacteristic(byte[] data, UUID characteristic, UUID service, BlueteethDevice device, OnCharacteristicWriteListener callback) {
-//        BluetoothGatt gatt = device.gatt;
-//        if (gatt == null) {
-//            return;
-//        }
-//
-//        mWriteCallbackQueue.add(callback);
-//
-//        BluetoothGattCharacteristic gattCharacteristic = gatt.getService(service).getCharacteristic(characteristic);
-//        gattCharacteristic.setValue(data);
-//        gatt.writeCharacteristic(gattCharacteristic);
-//    }
-
     private BluetoothAdapter.LeScanCallback mBLEScanCallback = (device, rssi, scanRecord) -> mScannedPeripherals.add(new BlueteethDevice(device));
-
-//
-//        @Override
-//        public void OnCharacteristicReadListener(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-//            super.OnCharacteristicReadListener(gatt, characteristic, status);
-//            mReadCallbackQueue.remove().onServicesDiscovered(characteristic.getValue());
-//        }
-//
-//        @Override
-//        public void OnCharacteristicWriteListener(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-//            super.OnCharacteristicWriteListener(gatt, characteristic, status);
-//            mWriteCallbackQueue.remove().onServicesDiscovered();
-//        }
-//    };
-
 
     public static BlueteethManager getInstance() {
         return singleton;
