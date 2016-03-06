@@ -1,1 +1,1 @@
-include ':app', ':blueteeth'
+include ':blueteeth-sample', ':blueteeth'

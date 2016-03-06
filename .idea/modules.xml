@@ -3,8 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Blueteeth.iml" filepath="$PROJECT_DIR$/Blueteeth.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/blueteeth/blueteeth.iml" filepath="$PROJECT_DIR$/blueteeth/blueteeth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/blueteeth-sample/blueteeth-sample.iml" filepath="$PROJECT_DIR$/blueteeth-sample/blueteeth-sample.iml" />
     </modules>
   </component>
 </project>
