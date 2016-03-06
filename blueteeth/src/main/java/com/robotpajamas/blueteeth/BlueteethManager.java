@@ -66,6 +66,23 @@ public class BlueteethManager {
     }
 
     /**
+     * Set the global instance returned from {@link #with}.
+     * <p>
+     * This method must be called before any calls to {@link #with} and may only be called once.
+     */
+    public static void setSingletonInstance(BlueteethManager blueteethManager) {
+        if (blueteethManager == null) {
+            throw new IllegalArgumentException("Picasso must not be null.");
+        }
+        synchronized (BlueteethManager.class) {
+            if (singleton != null) {
+                throw new IllegalStateException("Singleton instance already exists.");
+            }
+            singleton = blueteethManager;
+        }
+    }
+
+    /**
      * Controls the level of logging.
      */
     public enum LogLevel {
@@ -78,6 +95,12 @@ public class BlueteethManager {
     }
 
     private LogLevel mLogLevel = LogLevel.None;
+
+    /***
+     * Explicitly specified default constructor
+     */
+    BlueteethManager() {
+    }
 
     BlueteethManager(Context applicationContext) {
         // Grab the application context in case an activity context was passed in

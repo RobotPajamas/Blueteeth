@@ -79,6 +79,16 @@ public class BlueteethDevice {
         return mBluetoothDevice;
     }
 
+    /***
+     * Default constructor with invalid values - only here to help
+     * with testability and Mock extensions
+     */
+    BlueteethDevice() {
+        mName = "Invalid";
+        mMacAddress = "00:00:00:00:00:00";
+        mBluetoothDevice = null;
+    }
+
     BlueteethDevice(BluetoothDevice device) {
         mBluetoothDevice = device;
         mName = device.getName();
