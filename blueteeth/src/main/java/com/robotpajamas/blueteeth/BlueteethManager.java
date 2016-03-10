@@ -1,12 +1,8 @@
 package com.robotpajamas.blueteeth;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,6 +16,7 @@ import timber.log.Timber;
 
 public class BlueteethManager {
 
+    private Context mContext;
     private BluetoothAdapter mBLEAdapter;
     private Handler mHandler = new Handler();
     static volatile BlueteethManager singleton = null;
@@ -52,7 +49,7 @@ public class BlueteethManager {
         if (!BluetoothAdapter.checkBluetoothAddress(macAddress)) {
             throw new IllegalArgumentException("MacAddress is null or ill-formed");
         }
-        return new BlueteethDevice(mBLEAdapter.getRemoteDevice(macAddress));
+        return new BlueteethDevice(mContext, mBLEAdapter.getRemoteDevice(macAddress));
     }
 
     @Nullable
@@ -108,10 +105,10 @@ public class BlueteethManager {
 
     BlueteethManager(Context applicationContext) {
         // Grab the application context in case an activity context was passed in
-        Context context = applicationContext.getApplicationContext();
+        mContext = applicationContext.getApplicationContext();
 
         Timber.d("Initializing BluetoothManager");
-        BluetoothManager bleManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothManager bleManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
         if (bleManager == null) {
             Timber.e("Unable to initialize BluetoothManager.");
             throw new RuntimeException();
@@ -128,42 +125,7 @@ public class BlueteethManager {
             Timber.e("Bluetooth is not enabled.");
             throw new RuntimeException();
         }
-
-        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        applicationContext.registerReceiver(mReceiver, intentFilter);
     }
-
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver()
-    {
-        @Override
-        public void onReceive(Context context, Intent intent)
-        {
-            final String action = intent.getAction();
-
-            if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
-            {
-                final int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
-
-                switch(state){
-                    case BluetoothDevice.BOND_BONDING:
-                        // Bonding...
-                        Timber.e("onReceive - BONDING");
-                        break;
-
-                    case BluetoothDevice.BOND_BONDED:
-                        // Bonded...
-                        Timber.e("onReceive - BONDED");
-//                        context.unregisterReceiver(mReceiver);
-                        break;
-
-                    case BluetoothDevice.BOND_NONE:
-                        Timber.e("onReceive - NONE");
-                        // Not bonded...
-                        break;
-                }
-            }
-        }
-    };
 
     /**
      * Scans for nearby peripherals and fills the mScannedPeripherals ArrayList.
@@ -214,7 +176,7 @@ public class BlueteethManager {
         }
     }
 
-    private BluetoothAdapter.LeScanCallback mBLEScanCallback = (device, rssi, scanRecord) -> mScannedPeripherals.add(new BlueteethDevice(device));
+    private BluetoothAdapter.LeScanCallback mBLEScanCallback = (device, rssi, scanRecord) -> mScannedPeripherals.add(new BlueteethDevice(mContext, device));
 
     static class Builder {
         private final Context mContext;

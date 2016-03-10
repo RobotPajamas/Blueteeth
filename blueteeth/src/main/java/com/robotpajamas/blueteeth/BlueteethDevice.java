@@ -6,11 +6,16 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.robotpajamas.blueteeth.Callback.OnBondingChangedListener;
 import com.robotpajamas.blueteeth.Callback.OnCharacteristicReadListener;
 import com.robotpajamas.blueteeth.Callback.OnCharacteristicWriteListener;
 import com.robotpajamas.blueteeth.Callback.OnConnectionChangedListener;
@@ -23,6 +28,7 @@ import timber.log.Timber;
 public class BlueteethDevice {
     private final BluetoothDevice mBluetoothDevice;
     private final Handler mHandler;
+    private Context mContext;
 
     @Nullable
     private BluetoothGatt mBluetoothGatt;
@@ -34,6 +40,8 @@ public class BlueteethDevice {
     private OnCharacteristicReadListener mCharacteristicReadListener;
     @Nullable
     private OnCharacteristicWriteListener mCharacteristicWriteListener;
+    @Nullable
+    private OnBondingChangedListener mBondingChangedListener;
 
     private final String mName;
 
@@ -95,10 +103,12 @@ public class BlueteethDevice {
     }
 
 
-    BlueteethDevice(BluetoothDevice device) {
+    BlueteethDevice(Context context, BluetoothDevice device) {
         mBluetoothDevice = device;
         mName = device.getName();
         mMacAddress = device.getAddress();
+        // TODO: Need this for registering to the bonding process - ugly...
+        mContext = context;
         // TODO: Does this need to be dependency injected for testing?
         mHandler = new Handler(Looper.getMainLooper());
     }
@@ -117,13 +127,25 @@ public class BlueteethDevice {
         // TODO: Passing in a null context seems to work, but what are the consequences?
         // TODO: Should I grab the application context from the BlueteethManager? Seems odd...
         mHandler.post(() -> mBluetoothGatt = mBluetoothDevice.connectGatt(null, autoReconnect, mGattCallback));
-
         return true;
     }
 
     public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener) {
         mConnectionChangedListener = onConnectionChangedListener;
         return connect(autoReconnect);
+    }
+
+    /***
+     * This connect call is only useful if the user is interested in Pairing/Bonding
+     *
+     * @param autoReconnect
+     * @param onConnectionChangedListener
+     * @param onBondingChangedListener
+     * @return
+     */
+    public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, OnBondingChangedListener onBondingChangedListener) {
+        mBondingChangedListener = onBondingChangedListener;
+        return connect(autoReconnect, onConnectionChangedListener);
     }
 
     public boolean disconnect() {
@@ -236,9 +258,13 @@ public class BlueteethDevice {
 
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
-                    mBondState = BondState.fromInteger(mBluetoothDevice.getBondState());
+//                    mBondState = BondState.fromInteger(mBluetoothDevice.getBondState());
                     Timber.d("onConnectionStateChange - Connected - Bonding=" + mBondState);
                     mIsConnected = true;
+
+                    // Register for Bonding notifications
+                    mContext.registerReceiver(mBroadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
+
                     if (mConnectionChangedListener != null) {
                         Timber.e("STATE_CONNECTED - Callback Fired");
                         mConnectionChangedListener.onConnectionChanged(true);
@@ -249,8 +275,12 @@ public class BlueteethDevice {
 
                 case BluetoothProfile.STATE_DISCONNECTED:
                     Timber.d("onConnectionStateChange - Disconnected");
-                    mBondState = BondState.Unknown;
+//                    mBondState = BondState.Unknown;
                     mIsConnected = false;
+
+                    // Unregister for Bonding notifications
+                    mContext.unregisterReceiver(mBroadcastReceiver);
+
                     if (mConnectionChangedListener != null) {
                         Timber.e("STATE_DISCONNECTED - Callback Fired");
                         mConnectionChangedListener.onConnectionChanged(false);
@@ -311,6 +341,36 @@ public class BlueteethDevice {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
             Timber.d("OnCharacteristicChanged - gatt: %s, characteristic: %s ", gatt.toString(), characteristic.toString());
+        }
+    };
+
+    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+
+                switch (state) {
+                    case BluetoothDevice.BOND_BONDING:
+                        Timber.d("onReceive - BONDING");
+                        mBondState = BondState.Bonding;
+                        break;
+
+                    case BluetoothDevice.BOND_BONDED:
+                        Timber.d("onReceive - BONDED");
+                        mBondState = BondState.Bonded;
+                        if (mBondingChangedListener != null) {
+                            mBondingChangedListener.onBondingChanged(true);
+                        }
+                        break;
+
+                    case BluetoothDevice.BOND_NONE:
+                        Timber.d("onReceive - NONE");
+                        mBondState = BondState.Unknown;
+                        break;
+                }
+            }
         }
     };
 }
