@@ -1,8 +1,12 @@
 package com.robotpajamas.blueteeth;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -124,7 +128,42 @@ public class BlueteethManager {
             Timber.e("Bluetooth is not enabled.");
             throw new RuntimeException();
         }
+
+        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        applicationContext.registerReceiver(mReceiver, intentFilter);
     }
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            final String action = intent.getAction();
+
+            if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
+            {
+                final int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+
+                switch(state){
+                    case BluetoothDevice.BOND_BONDING:
+                        // Bonding...
+                        Timber.e("onReceive - BONDING");
+                        break;
+
+                    case BluetoothDevice.BOND_BONDED:
+                        // Bonded...
+                        Timber.e("onReceive - BONDED");
+//                        context.unregisterReceiver(mReceiver);
+                        break;
+
+                    case BluetoothDevice.BOND_NONE:
+                        Timber.e("onReceive - NONE");
+                        // Not bonded...
+                        break;
+                }
+            }
+        }
+    };
 
     /**
      * Scans for nearby peripherals and fills the mScannedPeripherals ArrayList.

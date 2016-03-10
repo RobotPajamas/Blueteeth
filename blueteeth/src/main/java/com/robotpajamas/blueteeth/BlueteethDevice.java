@@ -95,11 +95,15 @@ public class BlueteethDevice {
         mMacAddress = device.getAddress();
     }
 
-    public void connect(OnConnectionChangedListener onConnectionChangedListener) {
+    public void connect(boolean autoReconnect) {
+        mBluetoothGatt = mBluetoothDevice.connectGatt(null, autoReconnect, mGattCallback);
+    }
+
+    public void connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener) {
         mConnectionChangedListener = onConnectionChangedListener;
         // TODO: Passing in a null context seems to work, but what are the consequences?
         // TODO: Should I grab the application context from the BlueteethManager? Seems odd...
-        mBluetoothGatt = mBluetoothDevice.connectGatt(null, false, mGattCallback);
+        connect(autoReconnect);
     }
 
     public void disconnect(OnConnectionChangedListener onConnectionChangedListener) {
@@ -203,6 +207,7 @@ public class BlueteethDevice {
                         Timber.d("onConnectionStateChange - Connected - Bonding=" + mBondState);
                         mIsConnected = true;
                         if (mConnectionChangedListener != null) {
+                            Timber.e("STATE_CONNECTED - Callback Fired");
                             mConnectionChangedListener.onConnectionChanged(true);
                             mConnectionChangedListener = null;
                         }
@@ -214,12 +219,12 @@ public class BlueteethDevice {
                         mBondState = BondState.Unknown;
                         mIsConnected = false;
                         if (mConnectionChangedListener != null) {
+                            Timber.e("STATE_DISCONNECTED - Callback Fired");
                             mConnectionChangedListener.onConnectionChanged(false);
                             mConnectionChangedListener = null;
                         }
                         close();
                         break;
-
                 }
             } else {
                 //TODO: Handle this case
@@ -235,6 +240,7 @@ public class BlueteethDevice {
 
 //            if (status == BluetoothGatt.GATT_SUCCESS) {
             if (mServicesDiscoveredListener != null) {
+                Timber.e("onServicesDiscovered - Fire Callback");
                 mServicesDiscoveredListener.onServicesDiscovered();
                 mServicesDiscoveredListener = null;
             }
@@ -247,6 +253,7 @@ public class BlueteethDevice {
             Timber.d("OnCharacteristicReadListener - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
 //            if (status == BluetoothGatt.GATT_SUCCESS) {
             if (mCharacteristicReadListener != null) {
+                Timber.e("onCharacteristicRead - Fire Callback");
                 mCharacteristicReadListener.onCharacteristicRead(characteristic.getValue());
                 mCharacteristicReadListener = null;
             }
@@ -259,6 +266,7 @@ public class BlueteethDevice {
             Timber.d("OnCharacteristicWriteListener - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
 //            if (status == BluetoothGatt.GATT_SUCCESS) {
             if (mCharacteristicWriteListener != null) {
+                Timber.e("OnCharacteristicWriteListener - Fire Callback");
                 mCharacteristicWriteListener.onCharacteristicWritten();
                 mCharacteristicWriteListener = null;
             }
