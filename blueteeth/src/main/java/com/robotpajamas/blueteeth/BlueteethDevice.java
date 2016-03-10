@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -43,6 +44,8 @@ public class BlueteethDevice {
     public String getMacAddress() {
         return mMacAddress;
     }
+
+    private Context mContext;
 
     public enum BondState {
         Unknown,
@@ -89,36 +92,57 @@ public class BlueteethDevice {
         mBluetoothDevice = null;
     }
 
+
     BlueteethDevice(BluetoothDevice device) {
         mBluetoothDevice = device;
         mName = device.getName();
         mMacAddress = device.getAddress();
     }
 
-    public void connect(boolean autoReconnect) {
-        mBluetoothGatt = mBluetoothDevice.connectGatt(null, autoReconnect, mGattCallback);
-    }
+    // Autoreconnect == true is a slow connection, false is fast
+    // https://stackoverflow.com/questions/22214254/android-ble-connect-slowly
+    public boolean connect(boolean autoReconnect) {
+        if (mIsConnected) {
+            Timber.d("connect: Already connected, returning - disregarding autoReconnect");
+            if (mConnectionChangedListener != null) {
+                mConnectionChangedListener.onConnectionChanged(mIsConnected);
+            }
+            return false;
+        }
 
-    public void connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener) {
-        mConnectionChangedListener = onConnectionChangedListener;
         // TODO: Passing in a null context seems to work, but what are the consequences?
         // TODO: Should I grab the application context from the BlueteethManager? Seems odd...
-        connect(autoReconnect);
+        mBluetoothGatt = mBluetoothDevice.connectGatt(null, autoReconnect, mGattCallback);
+        return true;
     }
 
-    public void disconnect(OnConnectionChangedListener onConnectionChangedListener) {
+    public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener) {
+        mConnectionChangedListener = onConnectionChangedListener;
+        return connect(autoReconnect);
+    }
+
+    public boolean disconnect() {
         if (mBluetoothGatt == null) {
-            Timber.e("GATT is null");
-            return;
+            Timber.e("disconnect: Cannot disconnect - GATT is null");
+            return false;
+        }
+        mBluetoothGatt.disconnect();
+        return true;
+    }
+
+    public boolean disconnect(OnConnectionChangedListener onConnectionChangedListener) {
+        if (mBluetoothGatt == null) {
+            Timber.e("disconnect: Cannot disconnect - GATT is null");
+            return false;
         }
 
         mConnectionChangedListener = onConnectionChangedListener;
-        mBluetoothGatt.disconnect();
+        return disconnect();
     }
 
     public boolean discoverServices(OnServicesDiscoveredListener onServicesDiscoveredListener) {
         if (!mIsConnected || mBluetoothGatt == null) {
-            Timber.e("Device is not connected, or GATT is null");
+            Timber.e("discoverServices: Device is not connected, or GATT is null");
             return false;
         }
 
@@ -129,20 +153,20 @@ public class BlueteethDevice {
 
     public boolean readCharacteristic(@NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicReadListener onCharacteristicReadListener) {
         if (!mIsConnected || mBluetoothGatt == null) {
-            Timber.e("Device is not connected, or GATT is null");
+            Timber.e("readCharacteristic: Device is not connected, or GATT is null");
             return false;
         }
 
         mCharacteristicReadListener = onCharacteristicReadListener;
         BluetoothGattService gattService = mBluetoothGatt.getService(service);
         if (gattService == null) {
-            Timber.e("Service not available - %s", service.toString());
+            Timber.e("readCharacteristic: Service not available - %s", service.toString());
             return false;
         }
 
         BluetoothGattCharacteristic gattCharacteristic = gattService.getCharacteristic(characteristic);
         if (gattCharacteristic == null) {
-            Timber.e("Characteristic not available - %s", characteristic.toString());
+            Timber.e("readCharacteristic: Characteristic not available - %s", characteristic.toString());
             return false;
         }
 
@@ -151,20 +175,20 @@ public class BlueteethDevice {
 
     public boolean writeCharacteristic(@NonNull byte[] data, @NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicWriteListener onCharacteristicWriteListener) {
         if (!mIsConnected || mBluetoothGatt == null) {
-            Timber.e("Device is not connected, or GATT is null");
+            Timber.e("writeCharacteristic: Device is not connected, or GATT is null");
             return false;
         }
 
         mCharacteristicWriteListener = onCharacteristicWriteListener;
         BluetoothGattService gattService = mBluetoothGatt.getService(service);
         if (gattService == null) {
-            Timber.e("Service not available - %s", service.toString());
+            Timber.e("writeCharacteristic: Service not available - %s", service.toString());
             return false;
         }
 
         BluetoothGattCharacteristic gattCharacteristic = gattService.getCharacteristic(characteristic);
         if (gattCharacteristic == null) {
-            Timber.e("Characteristic not available - %s", characteristic.toString());
+            Timber.e("writeCharacteristic: Characteristic not available - %s", characteristic.toString());
             return false;
         }
 
@@ -200,36 +224,32 @@ public class BlueteethDevice {
             super.onConnectionStateChange(gatt, status, newState);
             Timber.d("onConnectionStateChange - gatt: %s, status: %s, newState: %s ", gatt.toString(), status, newState);
 
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                switch (newState) {
-                    case BluetoothProfile.STATE_CONNECTED:
-                        mBondState = BondState.fromInteger(mBluetoothDevice.getBondState());
-                        Timber.d("onConnectionStateChange - Connected - Bonding=" + mBondState);
-                        mIsConnected = true;
-                        if (mConnectionChangedListener != null) {
-                            Timber.e("STATE_CONNECTED - Callback Fired");
-                            mConnectionChangedListener.onConnectionChanged(true);
-                            mConnectionChangedListener = null;
-                        }
+            // Removed check for GATT_SUCCESS - do we care? I think the current state is all that matters...
 
-                        break;
+            switch (newState) {
+                case BluetoothProfile.STATE_CONNECTED:
+                    mBondState = BondState.fromInteger(mBluetoothDevice.getBondState());
+                    Timber.d("onConnectionStateChange - Connected - Bonding=" + mBondState);
+                    mIsConnected = true;
+                    if (mConnectionChangedListener != null) {
+                        Timber.e("STATE_CONNECTED - Callback Fired");
+                        mConnectionChangedListener.onConnectionChanged(true);
+//                            mConnectionChangedListener = null;
+                    }
 
-                    case BluetoothProfile.STATE_DISCONNECTED:
-                        Timber.d("onConnectionStateChange - Disconnected");
-                        mBondState = BondState.Unknown;
-                        mIsConnected = false;
-                        if (mConnectionChangedListener != null) {
-                            Timber.e("STATE_DISCONNECTED - Callback Fired");
-                            mConnectionChangedListener.onConnectionChanged(false);
-                            mConnectionChangedListener = null;
-                        }
-                        close();
-                        break;
-                }
-            } else {
-                //TODO: Handle this case
-                Timber.e("Not GATT SUCCESS");
-                close();
+                    break;
+
+                case BluetoothProfile.STATE_DISCONNECTED:
+                    Timber.d("onConnectionStateChange - Disconnected");
+                    mBondState = BondState.Unknown;
+                    mIsConnected = false;
+                    if (mConnectionChangedListener != null) {
+                        Timber.e("STATE_DISCONNECTED - Callback Fired");
+                        mConnectionChangedListener.onConnectionChanged(false);
+//                            mConnectionChangedListener = null;
+                    }
+//                    close();
+                    break;
             }
         }
 
@@ -238,39 +258,45 @@ public class BlueteethDevice {
             super.onServicesDiscovered(gatt, status);
             Timber.d("onServicesDiscovered - gatt: %s, status: %s", gatt.toString(), status);
 
-//            if (status == BluetoothGatt.GATT_SUCCESS) {
-            if (mServicesDiscoveredListener != null) {
-                Timber.e("onServicesDiscovered - Fire Callback");
-                mServicesDiscoveredListener.onServicesDiscovered();
-                mServicesDiscoveredListener = null;
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (mServicesDiscoveredListener != null) {
+                    Timber.e("onServicesDiscovered - Fire Callback");
+                    mServicesDiscoveredListener.onServicesDiscovered();
+                    mServicesDiscoveredListener = null;
+                }
+            } else {
+                Timber.e("onCharacteristicRead - Failed with status: " + status);
             }
-//            }
         }
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
             Timber.d("OnCharacteristicReadListener - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
-//            if (status == BluetoothGatt.GATT_SUCCESS) {
-            if (mCharacteristicReadListener != null) {
-                Timber.e("onCharacteristicRead - Fire Callback");
-                mCharacteristicReadListener.onCharacteristicRead(characteristic.getValue());
-                mCharacteristicReadListener = null;
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (mCharacteristicReadListener != null) {
+                    Timber.e("onCharacteristicRead - Fire Callback");
+                    mCharacteristicReadListener.onCharacteristicRead(characteristic.getValue());
+                    mCharacteristicReadListener = null;
+                }
+            } else {
+                Timber.e("onCharacteristicRead - Failed with status: " + status);
             }
-//            }
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
             Timber.d("OnCharacteristicWriteListener - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
-//            if (status == BluetoothGatt.GATT_SUCCESS) {
-            if (mCharacteristicWriteListener != null) {
-                Timber.e("OnCharacteristicWriteListener - Fire Callback");
-                mCharacteristicWriteListener.onCharacteristicWritten();
-                mCharacteristicWriteListener = null;
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (mCharacteristicWriteListener != null) {
+                    Timber.e("OnCharacteristicWriteListener - Fire Callback");
+                    mCharacteristicWriteListener.onCharacteristicWritten();
+                    mCharacteristicWriteListener = null;
+                }
+            } else {
+                Timber.e("onCharacteristicWrite - Failed with status: " + status);
             }
-//            }
         }
 
         @Override

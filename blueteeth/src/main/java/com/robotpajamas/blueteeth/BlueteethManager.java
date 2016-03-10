@@ -216,10 +216,6 @@ public class BlueteethManager {
 
     private BluetoothAdapter.LeScanCallback mBLEScanCallback = (device, rssi, scanRecord) -> mScannedPeripherals.add(new BlueteethDevice(device));
 
-    public static BlueteethManager getInstance() {
-        return singleton;
-    }
-
     static class Builder {
         private final Context mContext;
 
