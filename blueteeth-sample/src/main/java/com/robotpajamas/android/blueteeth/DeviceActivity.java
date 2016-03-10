@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.robotpajamas.blueteeth.BlueteethDevice;
 import com.robotpajamas.blueteeth.BlueteethManager;
 import com.robotpajamas.blueteeth.BlueteethUtils;
+import com.robotpajamas.blueteeth.Callback.OnConnectionChangedListener;
 
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
@@ -64,7 +65,7 @@ public class DeviceActivity extends Activity {
             });
         } else {
             updateReceivedData(String.format("Attempting to connect to  %s - %s...", mBlueteethDevice.getName(), mBlueteethDevice.getMacAddress()));
-            mBlueteethDevice.connect(isConnected -> {
+            mBlueteethDevice.connect(true, isConnected -> {
                 updateReceivedData("Connection Status: " + Boolean.toString(isConnected) + ", Bond State=" + mBlueteethDevice.getBondState());
                 mIsConnected = isConnected;
                 runOnUiThread(mConnectionRunnable);
