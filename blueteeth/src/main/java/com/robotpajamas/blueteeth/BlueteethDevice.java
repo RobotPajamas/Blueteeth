@@ -6,7 +6,8 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
-import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -21,6 +22,7 @@ import timber.log.Timber;
 
 public class BlueteethDevice {
     private final BluetoothDevice mBluetoothDevice;
+    private final Handler mHandler;
 
     @Nullable
     private BluetoothGatt mBluetoothGatt;
@@ -44,8 +46,6 @@ public class BlueteethDevice {
     public String getMacAddress() {
         return mMacAddress;
     }
-
-    private Context mContext;
 
     public enum BondState {
         Unknown,
@@ -90,6 +90,8 @@ public class BlueteethDevice {
         mName = "Invalid";
         mMacAddress = "00:00:00:00:00:00";
         mBluetoothDevice = null;
+        // TODO: Does this need to be dependency injected for testing?
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
 
@@ -97,6 +99,8 @@ public class BlueteethDevice {
         mBluetoothDevice = device;
         mName = device.getName();
         mMacAddress = device.getAddress();
+        // TODO: Does this need to be dependency injected for testing?
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
     // Autoreconnect == true is a slow connection, false is fast
@@ -112,7 +116,8 @@ public class BlueteethDevice {
 
         // TODO: Passing in a null context seems to work, but what are the consequences?
         // TODO: Should I grab the application context from the BlueteethManager? Seems odd...
-        mBluetoothGatt = mBluetoothDevice.connectGatt(null, autoReconnect, mGattCallback);
+        mHandler.post(() -> mBluetoothGatt = mBluetoothDevice.connectGatt(null, autoReconnect, mGattCallback));
+
         return true;
     }
 
@@ -126,7 +131,8 @@ public class BlueteethDevice {
             Timber.e("disconnect: Cannot disconnect - GATT is null");
             return false;
         }
-        mBluetoothGatt.disconnect();
+
+        mHandler.post(mBluetoothGatt::disconnect);
         return true;
     }
 
@@ -147,7 +153,7 @@ public class BlueteethDevice {
         }
 
         mServicesDiscoveredListener = onServicesDiscoveredListener;
-        mBluetoothGatt.discoverServices();
+        mHandler.post(mBluetoothGatt::discoverServices);
         return true;
     }
 
@@ -170,7 +176,8 @@ public class BlueteethDevice {
             return false;
         }
 
-        return mBluetoothGatt.readCharacteristic(gattCharacteristic);
+        mHandler.post(() -> mBluetoothGatt.readCharacteristic(gattCharacteristic));
+        return true;
     }
 
     public boolean writeCharacteristic(@NonNull byte[] data, @NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicWriteListener onCharacteristicWriteListener) {
@@ -193,7 +200,8 @@ public class BlueteethDevice {
         }
 
         gattCharacteristic.setValue(data);
-        return mBluetoothGatt.writeCharacteristic(gattCharacteristic);
+        mHandler.post(() -> mBluetoothGatt.writeCharacteristic(gattCharacteristic));
+        return true;
     }
 
     public void close() {
