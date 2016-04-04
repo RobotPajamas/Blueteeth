@@ -30,6 +30,9 @@ public class BlueteethDevice {
     private final Handler mHandler;
     private Context mContext;
 
+    private int mRssi;
+    private byte[] mScanRecord;
+
     @Nullable
     private BluetoothGatt mBluetoothGatt;
     @Nullable
@@ -53,6 +56,22 @@ public class BlueteethDevice {
 
     public String getMacAddress() {
         return mMacAddress;
+    }
+
+    public int getRssi() {
+        return mRssi;
+    }
+
+    void setRssi(int rssi) {
+        mRssi = rssi;
+    }
+
+    public byte[] getScanRecord() {
+        return mScanRecord;
+    }
+
+    void setScanRecord(byte[] scanRecord) {
+        mScanRecord = mScanRecord;
     }
 
     public enum BondState {
@@ -111,6 +130,12 @@ public class BlueteethDevice {
         mContext = context;
         // TODO: Does this need to be dependency injected for testing?
         mHandler = new Handler(Looper.getMainLooper());
+    }
+
+    BlueteethDevice(Context context, BluetoothDevice device, int rssi, byte[] scanRecord) {
+        this(context, device);
+        mRssi = rssi;
+        mScanRecord = scanRecord;
     }
 
     // Autoreconnect == true is a slow connection, false is fast
@@ -373,4 +398,21 @@ public class BlueteethDevice {
             }
         }
     };
+
+    @Override
+    public String toString() {
+        return "BluetoothDevice - Name: " + getName() + ", macAddress: " + mBluetoothDevice.toString() + "\n"
+                + "RSSI: " + getRssi() + "\n"
+                + "ScanRecord: " + "\n";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }
