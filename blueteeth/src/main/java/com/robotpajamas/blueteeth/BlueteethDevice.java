@@ -412,6 +412,7 @@ public class BlueteethDevice {
                 + "ScanRecord: " + Arrays.toString(mScanRecord) + "\n";
     }
 
+    // TODO: Override these correctly
     @Override
     public boolean equals(Object o) {
         return super.equals(o);
