@@ -21,6 +21,7 @@ import com.robotpajamas.blueteeth.Callback.OnCharacteristicWriteListener;
 import com.robotpajamas.blueteeth.Callback.OnConnectionChangedListener;
 import com.robotpajamas.blueteeth.Callback.OnServicesDiscoveredListener;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -403,7 +404,7 @@ public class BlueteethDevice {
     public String toString() {
         return "BluetoothDevice - Name: " + getName() + ", macAddress: " + mBluetoothDevice.toString() + "\n"
                 + "RSSI: " + getRssi() + "\n"
-                + "ScanRecord: " + "\n";
+                + "ScanRecord: " + Arrays.toString(mScanRecord) + "\n";
     }
 
     @Override
