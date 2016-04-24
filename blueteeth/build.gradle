@@ -67,9 +67,9 @@ bintray {
         publicDownloadNumbers = true
 
         version {
-            name = '${versionMajor}.${versionMinor}.${versionPatch}'
+            name = "${versionMajor}.${versionMinor}.${versionPatch}"
             released  = new Date()
-            vcsTag = '${versionMajor}.${versionMinor}.${versionPatch}'
+            vcsTag = "${versionMajor}.${versionMinor}.${versionPatch}"
         }
     }
 }
