@@ -1,4 +1,4 @@
-package com.robotpajamas.blueteeth.Callback;
+package com.robotpajamas.blueteeth.listeners;
 
 import com.robotpajamas.blueteeth.BlueteethDevice;
 

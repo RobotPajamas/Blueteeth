@@ -2,8 +2,8 @@ package com.robotpajamas.blueteeth;
 
 import android.support.annotation.NonNull;
 
-import com.robotpajamas.blueteeth.Callback.OnCharacteristicReadListener;
-import com.robotpajamas.blueteeth.Callback.OnCharacteristicWriteListener;
+import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener;
+import com.robotpajamas.blueteeth.listeners.OnCharacteristicWriteListener;
 
 import java.util.UUID;
 

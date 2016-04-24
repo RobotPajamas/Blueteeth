@@ -9,7 +9,6 @@ import android.widget.TextView;
 import com.robotpajamas.blueteeth.BlueteethDevice;
 import com.robotpajamas.blueteeth.BlueteethManager;
 import com.robotpajamas.blueteeth.BlueteethUtils;
-import com.robotpajamas.blueteeth.Callback.OnConnectionChangedListener;
 
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;

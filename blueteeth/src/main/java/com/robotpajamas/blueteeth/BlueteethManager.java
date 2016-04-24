@@ -7,8 +7,8 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.robotpajamas.blueteeth.Callback.OnDeviceDiscoveredListener;
-import com.robotpajamas.blueteeth.Callback.OnScanCompletedListener;
+import com.robotpajamas.blueteeth.listeners.OnDeviceDiscoveredListener;
+import com.robotpajamas.blueteeth.listeners.OnScanCompletedListener;
 
 import java.util.ArrayList;
 import java.util.List;

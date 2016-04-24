@@ -15,11 +15,11 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.robotpajamas.blueteeth.Callback.OnBondingChangedListener;
-import com.robotpajamas.blueteeth.Callback.OnCharacteristicReadListener;
-import com.robotpajamas.blueteeth.Callback.OnCharacteristicWriteListener;
-import com.robotpajamas.blueteeth.Callback.OnConnectionChangedListener;
-import com.robotpajamas.blueteeth.Callback.OnServicesDiscoveredListener;
+import com.robotpajamas.blueteeth.listeners.OnBondingChangedListener;
+import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener;
+import com.robotpajamas.blueteeth.listeners.OnCharacteristicWriteListener;
+import com.robotpajamas.blueteeth.listeners.OnConnectionChangedListener;
+import com.robotpajamas.blueteeth.listeners.OnServicesDiscoveredListener;
 
 import java.util.Arrays;
 import java.util.UUID;
