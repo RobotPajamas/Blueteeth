@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.2.0'
+        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
     }
 }
 
@@ -13,12 +13,12 @@ apply plugin: 'me.tatarka.retrolambda'
 
 // Manifest version information
 def versionMajor = 0
-def versionMinor = 0
-def versionPatch = 1
+def versionMinor = 1
+def versionPatch = 0
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion "23.0.2"
 
     defaultConfig {
         minSdkVersion 19
@@ -41,6 +41,39 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.0'
+    // TODO: Remove this dependency - Used for NonNull and Nullable annotations
+    compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.jakewharton.timber:timber:3.1.0'
+}
+
+// Bintray-related
+apply plugin: 'com.jfrog.bintray'
+
+version = "${versionMajor}.${versionMinor}.${versionPatch}"
+group = 'com.robotpajamas.blueteeth'
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = 'maven'
+        name = 'blueteeth'
+        desc = 'An Android Bluetooth library'
+        websiteUrl = 'https://github.com/RobotPajamas/Blueteeth'
+        vcsUrl = 'https://github.com/RobotPajamas/Blueteeth.git'
+        licenses = ["Apache-2.0"]
+        publish = true
+        publicDownloadNumbers = true
+
+        version {
+            name = "${versionMajor}.${versionMinor}.${versionPatch}"
+            released  = new Date()
+            vcsTag = "${versionMajor}.${versionMinor}.${versionPatch}"
+        }
+    }
 }

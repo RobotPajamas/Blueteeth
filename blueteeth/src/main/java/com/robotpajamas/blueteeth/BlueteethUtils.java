@@ -2,8 +2,8 @@ package com.robotpajamas.blueteeth;
 
 import android.support.annotation.NonNull;
 
-import com.robotpajamas.blueteeth.Callback.OnCharacteristicReadListener;
-import com.robotpajamas.blueteeth.Callback.OnCharacteristicWriteListener;
+import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener;
+import com.robotpajamas.blueteeth.listeners.OnCharacteristicWriteListener;
 
 import java.util.UUID;
 
@@ -24,7 +24,7 @@ public class BlueteethUtils {
         if (device.isConnected()) {
             device.discoverServices(() -> device.writeCharacteristic(data, characteristic, service, callback));
         } else {
-            device.connect(isConnected -> {
+            device.connect(false, isConnected -> {
                 if (isConnected) {
                     device.discoverServices(() -> device.writeCharacteristic(data, characteristic, service, callback));
                 }
@@ -45,7 +45,7 @@ public class BlueteethUtils {
         if (device.isConnected()) {
             device.discoverServices(() -> device.readCharacteristic(characteristic, service, callback));
         } else {
-            device.connect(isConnected -> {
+            device.connect(false, isConnected -> {
                 if (isConnected) {
                     device.discoverServices(() -> device.readCharacteristic(characteristic, service, callback));
                 }

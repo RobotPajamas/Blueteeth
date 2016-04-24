@@ -7,15 +7,20 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.robotpajamas.blueteeth.Callback.OnScanCompletedListener;
+import com.robotpajamas.blueteeth.listeners.OnDeviceDiscoveredListener;
+import com.robotpajamas.blueteeth.listeners.OnScanCompletedListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import timber.log.Timber;
 
+// TODO: Fix support for pre-Lollipop vs post
+// TODO: Replace Timber with regular Logging using LogLevels
+// TODO: Aggregate and cleanup all recent commits from different projects
 public class BlueteethManager {
 
+    private Context mContext;
     private BluetoothAdapter mBLEAdapter;
     private Handler mHandler = new Handler();
     static volatile BlueteethManager singleton = null;
@@ -48,11 +53,14 @@ public class BlueteethManager {
         if (!BluetoothAdapter.checkBluetoothAddress(macAddress)) {
             throw new IllegalArgumentException("MacAddress is null or ill-formed");
         }
-        return new BlueteethDevice(mBLEAdapter.getRemoteDevice(macAddress));
+        return new BlueteethDevice(mContext, mBLEAdapter.getRemoteDevice(macAddress));
     }
 
     @Nullable
-    private OnScanCompletedListener mScanCompletedCallback;
+    private OnScanCompletedListener mOnScanCompletedListener;
+    @Nullable
+    private OnDeviceDiscoveredListener mOnDeviceDiscoveredListener;
+
 
     public static BlueteethManager with(Context context) {
         if (singleton == null) {
@@ -63,6 +71,23 @@ public class BlueteethManager {
             }
         }
         return singleton;
+    }
+
+    /**
+     * Set the global instance returned from {@link #with}.
+     * <p>
+     * This method must be called before any calls to {@link #with} and may only be called once.
+     */
+    public static void setSingletonInstance(BlueteethManager blueteethManager) {
+        if (blueteethManager == null) {
+            throw new IllegalArgumentException("Picasso must not be null.");
+        }
+        synchronized (BlueteethManager.class) {
+            if (singleton != null) {
+                throw new IllegalStateException("Singleton instance already exists.");
+            }
+            singleton = blueteethManager;
+        }
     }
 
     /**
@@ -79,12 +104,18 @@ public class BlueteethManager {
 
     private LogLevel mLogLevel = LogLevel.None;
 
+    /***
+     * Explicitly specified, package-protected default constructor
+     */
+    BlueteethManager() {
+    }
+
     BlueteethManager(Context applicationContext) {
         // Grab the application context in case an activity context was passed in
-        Context context = applicationContext.getApplicationContext();
+        mContext = applicationContext.getApplicationContext();
 
         Timber.d("Initializing BluetoothManager");
-        BluetoothManager bleManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothManager bleManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
         if (bleManager == null) {
             Timber.e("Unable to initialize BluetoothManager.");
             throw new RuntimeException();
@@ -107,13 +138,40 @@ public class BlueteethManager {
      * Scans for nearby peripherals and fills the mScannedPeripherals ArrayList.
      * Scan will be stopped after input timeout.
      *
-     * @param scanTimeoutMillis       timeout in milliseconds after which scan will be stoped
-     * @param onScanCompletedCallback callback will be called after scanTimeoutMillis,
-     *                                filled with nearby peripherals
+     * @param deviceDiscoveredListener callback will be called after each new device discovery
      */
-    public void scanForPeripherals(int scanTimeoutMillis, OnScanCompletedListener onScanCompletedCallback) {
+    public void scanForPeripherals(OnDeviceDiscoveredListener deviceDiscoveredListener) {
+        Timber.d("scanForPeripherals");
+        mOnDeviceDiscoveredListener = deviceDiscoveredListener;
+        scanForPeripherals();
+    }
+
+    /**
+     * Scans for nearby peripherals and fills the mScannedPeripherals ArrayList.
+     * Scan will be stopped after input timeout.
+     *
+     * @param scanTimeoutMillis        timeout in milliseconds after which scan will be stopped
+     * @param deviceDiscoveredListener callback will be called after each new device discovery
+     * @param scanCompletedListener    callback will be called after scanTimeoutMillis,
+     *                                 filled with nearby peripherals
+     */
+    public void scanForPeripherals(int scanTimeoutMillis, OnDeviceDiscoveredListener deviceDiscoveredListener, OnScanCompletedListener scanCompletedListener) {
+        Timber.d("scanForPeripherals");
+        mOnDeviceDiscoveredListener = deviceDiscoveredListener;
+        scanForPeripherals(scanTimeoutMillis, scanCompletedListener);
+    }
+
+    /**
+     * Scans for nearby peripherals and fills the mScannedPeripherals ArrayList.
+     * Scan will be stopped after input timeout.
+     *
+     * @param scanTimeoutMillis     timeout in milliseconds after which scan will be stoped
+     * @param scanCompletedListener callback will be called after scanTimeoutMillis,
+     *                              filled with nearby peripherals
+     */
+    public void scanForPeripherals(int scanTimeoutMillis, OnScanCompletedListener scanCompletedListener) {
         Timber.d("scanForPeripheralsWithTimeout");
-        mScanCompletedCallback = onScanCompletedCallback;
+        mOnScanCompletedListener = scanCompletedListener;
         scanForPeripherals();
         mHandler.postDelayed(this::stopScanForPeripherals, scanTimeoutMillis);
     }
@@ -146,17 +204,23 @@ public class BlueteethManager {
         mIsScanning = false;
         mBLEAdapter.stopLeScan(mBLEScanCallback);
 
-        if (mScanCompletedCallback != null) {
-            mScanCompletedCallback.onScanCompleted(mScannedPeripherals);
-            mScanCompletedCallback = null;
+        if (mOnDeviceDiscoveredListener != null) {
+            mOnDeviceDiscoveredListener = null;
+        }
+
+        if (mOnScanCompletedListener != null) {
+            mOnScanCompletedListener.onScanCompleted(mScannedPeripherals);
+            mOnScanCompletedListener = null;
         }
     }
 
-    private BluetoothAdapter.LeScanCallback mBLEScanCallback = (device, rssi, scanRecord) -> mScannedPeripherals.add(new BlueteethDevice(device));
-
-    public static BlueteethManager getInstance() {
-        return singleton;
-    }
+    private BluetoothAdapter.LeScanCallback mBLEScanCallback = (device, rssi, scanRecord) -> {
+        BlueteethDevice blueteethDevice = new BlueteethDevice(mContext, device, rssi, scanRecord);
+        mScannedPeripherals.add(blueteethDevice);
+        if (mOnDeviceDiscoveredListener != null) {
+            mOnDeviceDiscoveredListener.call(blueteethDevice);
+        }
+    };
 
     static class Builder {
         private final Context mContext;

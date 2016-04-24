@@ -20,7 +20,7 @@ import timber.log.Timber;
 
 public class MainActivity extends ListActivity {
     private static final int REQ_BLUETOOTH_ENABLE = 1000;
-    private static final int DEVICE_SCAN_MILLISECONDS = 5000;
+    private static final int DEVICE_SCAN_MILLISECONDS = 10000;
 
     @Bind(R.id.swiperefresh)
     SwipeRefreshLayout mSwipeRefresh;
