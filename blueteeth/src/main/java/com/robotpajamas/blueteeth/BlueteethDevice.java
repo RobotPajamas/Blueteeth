@@ -94,7 +94,7 @@ public class BlueteethDevice {
         }
     }
 
-    private BondState mBondState;
+    private BondState mBondState = BondState.Unknown;
 
     public BondState getBondState() {
         return mBondState;
@@ -295,6 +295,10 @@ public class BlueteethDevice {
                         Timber.e("STATE_CONNECTED - Callback Fired");
                         mConnectionChangedListener.onConnectionChanged(true);
 //                            mConnectionChangedListener = null;
+                    }
+
+                    if (mBondingChangedListener != null && mBondState == BondState.Unknown) {
+                        mBondingChangedListener.onBondingChanged(BondState.fromInteger(mBluetoothDevice.getBondState()) == BondState.Bonded);
                     }
 
                     break;
