@@ -45,3 +45,31 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.jakewharton.timber:timber:3.1.0'
 }
+
+// Bintray
+apply plugin: 'com.jfrog.bintray'
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = 'maven'
+        name = 'blueteeth'
+        desc = 'An Android Bluetooth library'
+        websiteUrl = 'https://github.com/RobotPajamas/Blueteeth'
+        vcsUrl = 'https://github.com/RobotPajamas/Blueteeth.git'
+        licenses = ["Apache-2.0"]
+        publish = true
+        publicDownloadNumbers = true
+
+        version {
+            name = '${versionMajor}.${versionMinor}.${versionPatch}'
+            released  = new Date()
+            vcsTag = '${versionMajor}.${versionMinor}.${versionPatch}'
+        }
+    }
+}
