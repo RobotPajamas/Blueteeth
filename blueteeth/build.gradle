@@ -1,3 +1,34 @@
+apply plugin: 'com.android.library'
+
+// Manifest version information
+def versionMajor = 0
+def versionMinor = 1
+def versionPatch = 1
+
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'blueteeth'
+
+    publishedGroupId = 'com.robotpajamas.blueteeth'
+    libraryName = 'Blueteeth'
+    artifact = 'blueteeth'
+
+    libraryDescription = 'An Android Bluetooth library'
+
+    siteUrl = 'https://github.com/RobotPajamas/Blueteeth'
+    gitUrl = 'https://github.com/RobotPajamas/Blueteeth.git'
+
+    libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}"
+
+    developerId = 'sureshjoshi'
+    developerName = 'Suresh Joshi'
+    developerEmail = 'suresh@robotpajamas.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
 buildscript {
     repositories {
         mavenCentral()
@@ -8,13 +39,7 @@ buildscript {
     }
 }
 
-apply plugin: 'com.android.library'
 apply plugin: 'me.tatarka.retrolambda'
-
-// Manifest version information
-def versionMajor = 0
-def versionMinor = 1
-def versionPatch = 1
 
 android {
     compileSdkVersion 23
@@ -46,34 +71,5 @@ dependencies {
     compile 'com.jakewharton.timber:timber:3.1.0'
 }
 
-// Bintray-related
-apply plugin: 'com.jfrog.bintray'
-
-version = "${versionMajor}.${versionMinor}.${versionPatch}"
-group = 'com.robotpajamas.blueteeth'
-
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
-
-    configurations = ['archives']
-    pkg {
-        repo = 'maven'
-        name = 'blueteeth'
-        desc = 'An Android Bluetooth library'
-        websiteUrl = 'https://github.com/RobotPajamas/Blueteeth'
-        vcsUrl = 'https://github.com/RobotPajamas/Blueteeth.git'
-        licenses = ["Apache-2.0"]
-        publish = true
-        publicDownloadNumbers = true
-
-        version {
-            name = "${versionMajor}.${versionMinor}.${versionPatch}"
-            released  = new Date()
-            vcsTag = "${versionMajor}.${versionMinor}.${versionPatch}"
-        }
-    }
-}
+apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/bintrayv1.gradle'
