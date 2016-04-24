@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import timber.log.Timber;
 
+// TODO: Make this object threadsafe and async-safe (called twice in a row, should return a failure?)
 public class BlueteethDevice {
     private final BluetoothDevice mBluetoothDevice;
     private final Handler mHandler;

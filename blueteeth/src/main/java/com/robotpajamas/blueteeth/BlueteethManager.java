@@ -16,7 +16,6 @@ import java.util.List;
 import timber.log.Timber;
 
 // TODO: Fix support for pre-Lollipop vs post
-// TODO: Replace Timber with regular Logging using LogLevels
 // TODO: Aggregate and cleanup all recent commits from different projects
 public class BlueteethManager {
 

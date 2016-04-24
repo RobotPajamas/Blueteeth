@@ -68,6 +68,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     // TODO: Remove this dependency - Used for NonNull and Nullable annotations
     compile 'com.android.support:appcompat-v7:23.3.0'
+    // TODO: Remove this dependency - Create LogLevel API + Standard logging
     compile 'com.jakewharton.timber:timber:3.1.0'
 }
 
