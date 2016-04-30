@@ -4,7 +4,7 @@
 
 ## What Is Blueteeth?
 
-Blueteeth is a simple, lightweight library intended to take away some of the cruft and tediousness of using the Android BLE API. I wrote about it originally [here](http://www.sureshjoshi.com/mobile/bluetooth-bluetooths-blueteeth/)
+Blueteeth is a simple, lightweight library intended to take away some of the cruft and tediousness of using the Android BLE API. I wrote about it originally here: [http://www.sureshjoshi.com/mobile/bluetooth-bluetooths-blueteeth/](http://www.sureshjoshi.com/mobile/bluetooth-bluetooths-blueteeth/), with a more recent update at [http://www.sureshjoshi.com/mobile/blueteeth-for-android/](http://www.sureshjoshi.com/mobile/blueteeth-for-android/).
 
 It was inspired by the simplicity and ease-of-use of [LGBluetooth](https://github.com/l0gg3r/LGBluetooth) on iOS.
 
