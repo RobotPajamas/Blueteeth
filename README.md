@@ -1,3 +1,5 @@
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Blueteeth-blue.svg?style=flat)](http://android-arsenal.com/details/1/3512)
+
 # Blueteeth
 
 ## What Is Blueteeth?
