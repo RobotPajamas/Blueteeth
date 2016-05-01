@@ -21,45 +21,45 @@ Additionally, when you're done with the BlueteethDevice object, call `.close()` 
 ## Usage
 
 Scan for BLE devices using the BlueteethManager singleton:
-
-    BlueteethManager.with(this).scanForPeripherals(DEVICE_SCAN_MILLISECONDS, blueteethDevices -> {
-        // Scan completed, iterate through received devices and log their name/mac address
-        for (BlueteethDevice device : blueteethDevices) {
-            if (!TextUtils.isEmpty(device.getBluetoothDevice().getName())) {
-                Timber.d("%s - %s", device.getName(), device.getMacAddress());
-            }
+```java
+BlueteethManager.with(this).scanForPeripherals(DEVICE_SCAN_MILLISECONDS, blueteethDevices -> {
+    // Scan completed, iterate through received devices and log their name/mac address
+    for (BlueteethDevice device : blueteethDevices) {
+        if (!TextUtils.isEmpty(device.getBluetoothDevice().getName())) {
+            Timber.d("%s - %s", device.getName(), device.getMacAddress());
         }
-    });
-
+    }
+});
+```
 Initiate a connection using a BlueteethDevice:
- 
-    mBlueteethDevice.connect(shouldAutoreconnect, isConnected -> {
-        Timber.d("Is the peripheral connected? %s", Boolean.toString(isConnected));
-    });
-
+```java 
+mBlueteethDevice.connect(shouldAutoreconnect, isConnected -> {
+    Timber.d("Is the peripheral connected? %s", Boolean.toString(isConnected));
+});
+```
 Discover Bluetooth services and characteristics:
- 
-    mBlueteethDevice.discoverServices(() -> {
-        Timber.d("Discovered services... Can now try to read/write...");
-    }); 
-
+```java
+mBlueteethDevice.discoverServices(() -> {
+    Timber.d("Discovered services... Can now try to read/write...");
+}); 
+```
 Write to a connected BlueteethDevice:
-
-    mBlueteethDevice.writeCharacteristic(new byte[]{1, 2, 3, 4}, characteristicUUID, serviceUUID, () -> {
-        Timber.d("Characterisic Written...");
-    })
-
+```java
+mBlueteethDevice.writeCharacteristic(new byte[]{1, 2, 3, 4}, characteristicUUID, serviceUUID, () -> {
+    Timber.d("Characterisic Written...");
+})
+```
 Read from a connected BlueteethDevice:
- 
-    mBlueteethDevice.readCharacteristic(characteristicUUID, serviceUUID, data -> {
-        if (data != null) {
-            Timber.d("Just read the following data... %s",  Arrays.toString(data));
-        }
-    });
-
+```java
+mBlueteethDevice.readCharacteristic(characteristicUUID, serviceUUID, data -> {
+    if (data != null) {
+        Timber.d("Just read the following data... %s",  Arrays.toString(data));
+    }
+});
+```
 Convenience methods to connect (if not connected), and read/write... This will NOT automatically disconnect, however, so you will remain disconnected unless you try to disconnect in the callback:
- 
-<pre class="lang:default decode:true " >BlueteethUtils.writeData(new byte[]{1, 2, 3, 4}, characteristicUUID, serviceUUID, mBlueteethDevice, () -&gt; {
+```java 
+BlueteethUtils.writeData(new byte[]{1, 2, 3, 4}, characteristicUUID, serviceUUID, mBlueteethDevice, () -&gt; {
     Timber.d("Connected to and wrote characteristic...");
 });
 
@@ -67,7 +67,8 @@ BlueteethUtils.read(characteristicUUID, serviceUUID, mBlueteethDevice, data -&gt
     if (data != null) {
         Timber.d("Just connected and read the following data... %s",  Arrays.toString(data));
     }
-});</pre> 
+});
+```
 
 Check out the sample app in `blueteeth-sample/` to see the API in action. 
 
