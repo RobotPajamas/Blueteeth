@@ -3,6 +3,8 @@ dim port
 dim led_value
 dim read_result
 dim connected 
+dim mac_addr(6)
+dim tmp(20)
 
 # Single value incrementing every second (can be written through attributes write too)
 dim incrementing_value(1)
