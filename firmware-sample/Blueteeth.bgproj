@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project>
+    <gatt in="gatt.xml" />
+    <hardware in="hardware.xml" />    
+    <script in="Blueteeth.bgs" />
+    <config in="config.xml" />
+    <device type="ble113-m256k" />
+	<boot fw="bootota" />
+   	<image out="Blueteeth.hex" />    
+    <ota out="Blueteeth.ota" firmware="false" />
+</project>
