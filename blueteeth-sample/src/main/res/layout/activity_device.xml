@@ -18,7 +18,7 @@
             android:text="@string/connect" />
 
         <Button
-            android:id="@+id/button_read"
+            android:id="@+id/button_read_counter"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -26,12 +26,12 @@
             android:text="@string/read" />
 
         <Button
-            android:id="@+id/button_write"
+            android:id="@+id/button_write_counter"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:enabled="false"
-            android:text="@string/write" />
+            android:text="@string/reset_counter" />
 
         <Button
             android:id="@+id/button_clear"
