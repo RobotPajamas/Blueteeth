@@ -7,6 +7,8 @@ import com.robotpajamas.blueteeth.listeners.OnCharacteristicWriteListener;
 
 import java.util.UUID;
 
+// TODO: Handle error response from discovery
+// TODO: Handle null callback as a WRITE_NO_RESPONSE?
 public class BlueteethUtils {
 
     /**
@@ -20,13 +22,12 @@ public class BlueteethUtils {
      * @param callback       Optional callback after a successful write
      */
     public static void writeData(@NonNull byte[] data, @NonNull UUID characteristic, @NonNull UUID service, @NonNull BlueteethDevice device, OnCharacteristicWriteListener callback) {
-        // TODO: Handle null callback as a WRITE_NO_RESPONSE?
         if (device.isConnected()) {
-            device.discoverServices(() -> device.writeCharacteristic(data, characteristic, service, callback));
+            device.discoverServices(response -> device.writeCharacteristic(data, characteristic, service, callback));
         } else {
             device.connect(false, isConnected -> {
                 if (isConnected) {
-                    device.discoverServices(() -> device.writeCharacteristic(data, characteristic, service, callback));
+                    device.discoverServices(response -> device.writeCharacteristic(data, characteristic, service, callback));
                 }
             });
         }
@@ -43,11 +44,11 @@ public class BlueteethUtils {
      */
     public static void read(@NonNull UUID characteristic, @NonNull UUID service, @NonNull BlueteethDevice device, @NonNull OnCharacteristicReadListener callback) {
         if (device.isConnected()) {
-            device.discoverServices(() -> device.readCharacteristic(characteristic, service, callback));
+            device.discoverServices(response -> device.readCharacteristic(characteristic, service, callback));
         } else {
             device.connect(false, isConnected -> {
                 if (isConnected) {
-                    device.discoverServices(() -> device.readCharacteristic(characteristic, service, callback));
+                    device.discoverServices(response -> device.readCharacteristic(characteristic, service, callback));
                 }
             });
         }

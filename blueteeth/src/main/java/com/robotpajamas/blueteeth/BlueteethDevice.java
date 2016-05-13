@@ -325,46 +325,60 @@ public class BlueteethDevice {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
-            Timber.d("call - gatt: %s, status: %s", gatt.toString(), status);
+            Timber.d("onServicesDiscovered - gatt: %s, status: %s", gatt.toString(), status);
 
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                if (mServicesDiscoveredListener != null) {
-                    Timber.e("call - Fire Callback");
-                    mServicesDiscoveredListener.call();
-                    mServicesDiscoveredListener = null;
+            if (mServicesDiscoveredListener != null) {
+                BlueteethResponse response = BlueteethResponse.NO_ERROR;
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    Timber.d("onServicesDiscovered - Success");
+                } else {
+                    Timber.e("onServicesDiscovered - Failed with status: " + status);
+                    response = BlueteethResponse.ERROR;
                 }
-            } else {
-                Timber.e("call - Failed with status: " + status);
+                mServicesDiscoveredListener.call(response);
+                mServicesDiscoveredListener = null;
             }
         }
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-            Timber.d("OnCharacteristicReadListener - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                if (mCharacteristicReadListener != null) {
-                    Timber.e("call - Fire Callback");
-                    mCharacteristicReadListener.call(characteristic.getValue());
-                    mCharacteristicReadListener = null;
+            Timber.d("onCharacteristicRead - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
+
+            if (mCharacteristicReadListener != null) {
+                BlueteethResponse response = BlueteethResponse.NO_ERROR;
+                byte[] readData = new byte[0];
+
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    Timber.d("onCharacteristicRead - Success");
+                    readData = characteristic.getValue();
+                } else {
+                    Timber.e("onCharacteristicRead - Failed with status: " + status);
+                    response = BlueteethResponse.ERROR;
                 }
-            } else {
-                Timber.e("call - Failed with status: " + status);
+
+                mCharacteristicReadListener.call(response, readData);
+                mCharacteristicReadListener = null;
             }
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
-            Timber.d("OnCharacteristicWriteListener - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                if (mCharacteristicWriteListener != null) {
-                    Timber.e("OnCharacteristicWriteListener - Fire Callback");
-                    mCharacteristicWriteListener.call();
-                    mCharacteristicWriteListener = null;
+            Timber.d("onCharacteristicWrite - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
+
+            if (mCharacteristicWriteListener != null) {
+                BlueteethResponse response = BlueteethResponse.NO_ERROR;
+
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    Timber.d("onCharacteristicWrite - Success");
+                } else {
+                    Timber.e("onCharacteristicWrite - Failed with status: " + status);
+                    response = BlueteethResponse.ERROR;
                 }
-            } else {
-                Timber.e("onCharacteristicWrite - Failed with status: " + status);
+
+                mCharacteristicWriteListener.call(response);
+                mCharacteristicWriteListener = null;
             }
         }
 

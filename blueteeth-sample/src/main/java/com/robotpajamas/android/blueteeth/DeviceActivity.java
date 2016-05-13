@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.robotpajamas.android.blueteeth.peripherals.SamplePeripheral;
 import com.robotpajamas.blueteeth.BlueteethManager;
+import com.robotpajamas.blueteeth.BlueteethResponse;
 
 import java.util.Arrays;
 
@@ -77,9 +78,9 @@ public class DeviceActivity extends Activity {
     @OnClick(R.id.button_read_counter)
     void readCounter() {
         updateReceivedData("Attempting to Read Counter ...");
-        mSamplePeripheral.readCounter(data -> {
-            if (data == null) {
-                updateReceivedData("No data read...");
+        mSamplePeripheral.readCounter((response, data) -> {
+            if (response != BlueteethResponse.NO_ERROR) {
+                updateReceivedData("Read error... " + response.name());
                 return;
             }
 
@@ -90,7 +91,13 @@ public class DeviceActivity extends Activity {
     @OnClick(R.id.button_write_counter)
     void writeCharacteristic() {
         updateReceivedData("Attempting to Reset Counter ...");
-        mSamplePeripheral.writeCounter((byte) 42, () -> updateReceivedData("Counter characteristic reset to 42"));
+        mSamplePeripheral.writeCounter((byte) 42, response -> {
+            if (response != BlueteethResponse.NO_ERROR) {
+                updateReceivedData("Write error... " + response.name());
+                return;
+            }
+            updateReceivedData("Counter characteristic reset to 42");
+        });
     }
 
     @Override
