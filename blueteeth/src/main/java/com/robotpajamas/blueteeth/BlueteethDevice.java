@@ -146,7 +146,7 @@ public class BlueteethDevice {
         if (mIsConnected) {
             Timber.d("connect: Already connected, returning - disregarding autoReconnect");
             if (mConnectionChangedListener != null) {
-                mConnectionChangedListener.onConnectionChanged(mIsConnected);
+                mConnectionChangedListener.call(mIsConnected);
             }
             return false;
         }
@@ -294,12 +294,12 @@ public class BlueteethDevice {
 
                     if (mConnectionChangedListener != null) {
                         Timber.e("STATE_CONNECTED - Callback Fired");
-                        mConnectionChangedListener.onConnectionChanged(true);
+                        mConnectionChangedListener.call(true);
 //                            mConnectionChangedListener = null;
                     }
 
                     if (mBondingChangedListener != null && mBondState == BondState.Unknown) {
-                        mBondingChangedListener.onBondingChanged(BondState.fromInteger(mBluetoothDevice.getBondState()) == BondState.Bonded);
+                        mBondingChangedListener.call(BondState.fromInteger(mBluetoothDevice.getBondState()) == BondState.Bonded);
                     }
 
                     break;
@@ -314,7 +314,7 @@ public class BlueteethDevice {
 
                     if (mConnectionChangedListener != null) {
                         Timber.e("STATE_DISCONNECTED - Callback Fired");
-                        mConnectionChangedListener.onConnectionChanged(false);
+                        mConnectionChangedListener.call(false);
 //                            mConnectionChangedListener = null;
                     }
 //                    close();
@@ -325,16 +325,16 @@ public class BlueteethDevice {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
-            Timber.d("onServicesDiscovered - gatt: %s, status: %s", gatt.toString(), status);
+            Timber.d("call - gatt: %s, status: %s", gatt.toString(), status);
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (mServicesDiscoveredListener != null) {
-                    Timber.e("onServicesDiscovered - Fire Callback");
-                    mServicesDiscoveredListener.onServicesDiscovered();
+                    Timber.e("call - Fire Callback");
+                    mServicesDiscoveredListener.call();
                     mServicesDiscoveredListener = null;
                 }
             } else {
-                Timber.e("onCharacteristicRead - Failed with status: " + status);
+                Timber.e("call - Failed with status: " + status);
             }
         }
 
@@ -344,12 +344,12 @@ public class BlueteethDevice {
             Timber.d("OnCharacteristicReadListener - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (mCharacteristicReadListener != null) {
-                    Timber.e("onCharacteristicRead - Fire Callback");
-                    mCharacteristicReadListener.onCharacteristicRead(characteristic.getValue());
+                    Timber.e("call - Fire Callback");
+                    mCharacteristicReadListener.call(characteristic.getValue());
                     mCharacteristicReadListener = null;
                 }
             } else {
-                Timber.e("onCharacteristicRead - Failed with status: " + status);
+                Timber.e("call - Failed with status: " + status);
             }
         }
 
@@ -360,7 +360,7 @@ public class BlueteethDevice {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (mCharacteristicWriteListener != null) {
                     Timber.e("OnCharacteristicWriteListener - Fire Callback");
-                    mCharacteristicWriteListener.onCharacteristicWritten();
+                    mCharacteristicWriteListener.call();
                     mCharacteristicWriteListener = null;
                 }
             } else {
@@ -392,7 +392,7 @@ public class BlueteethDevice {
                         Timber.d("onReceive - BONDED");
                         mBondState = BondState.Bonded;
                         if (mBondingChangedListener != null) {
-                            mBondingChangedListener.onBondingChanged(true);
+                            mBondingChangedListener.call(true);
                         }
                         break;
 

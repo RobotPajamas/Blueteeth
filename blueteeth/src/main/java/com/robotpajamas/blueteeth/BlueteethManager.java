@@ -207,7 +207,7 @@ public class BlueteethManager {
         }
 
         if (mOnScanCompletedListener != null) {
-            mOnScanCompletedListener.onScanCompleted(mScannedPeripherals);
+            mOnScanCompletedListener.call(mScannedPeripherals);
             mOnScanCompletedListener = null;
         }
     }
