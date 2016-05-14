@@ -39,34 +39,50 @@ Initiate a connection using a BlueteethDevice:
 
 Discover Bluetooth services and characteristics:
  
-    mBlueteethDevice.discoverServices(() -> {
+    mBlueteethDevice.discoverServices(response -> {
+        if (response != BlueteethResponse.NO_ERROR) {
+            Timber.e("Discovery error - %s",  response.name());
+            return;
+        }
         Timber.d("Discovered services... Can now try to read/write...");
     }); 
 
 Write to a connected BlueteethDevice:
 
-    mBlueteethDevice.writeCharacteristic(new byte[]{1, 2, 3, 4}, characteristicUUID, serviceUUID, () -> {
+    mBlueteethDevice.writeCharacteristic(new byte[]{1, 2, 3, 4}, characteristicUUID, serviceUUID, response -> {
+        if (response != BlueteethResponse.NO_ERROR) {
+            Timber.e("Write error - %s",  response.name());
+            return;
+        }
         Timber.d("Characterisic Written...");
     })
 
 Read from a connected BlueteethDevice:
  
-    mBlueteethDevice.readCharacteristic(characteristicUUID, serviceUUID, data -> {
-        if (data != null) {
-            Timber.d("Just read the following data... %s",  Arrays.toString(data));
+    mBlueteethDevice.readCharacteristic(characteristicUUID, serviceUUID, (response, data) -> {
+        if (response != BlueteethResponse.NO_ERROR) {
+            Timber.e("Read error - %s",  response.name());
+            return;
         }
+        Timber.d("Just read the following data... %s",  Arrays.toString(data));
     });
 
 Convenience methods to connect (if not connected), and read/write... This will NOT automatically disconnect, however, so you will remain disconnected unless you try to disconnect in the callback:
  
-<pre class="lang:default decode:true " >BlueteethUtils.writeData(new byte[]{1, 2, 3, 4}, characteristicUUID, serviceUUID, mBlueteethDevice, () -&gt; {
+<pre class="lang:default decode:true " >BlueteethUtils.writeData(new byte[]{1, 2, 3, 4}, characteristicUUID, serviceUUID, mBlueteethDevice, response -&gt; {
+    if (response != BlueteethResponse.NO_ERROR) {
+        Timber.e("Write error - %s",  response.name());
+        return;
+    }
     Timber.d("Connected to and wrote characteristic...");
 });
 
-BlueteethUtils.read(characteristicUUID, serviceUUID, mBlueteethDevice, data -&gt; {
-    if (data != null) {
-        Timber.d("Just connected and read the following data... %s",  Arrays.toString(data));
+BlueteethUtils.read(characteristicUUID, serviceUUID, mBlueteethDevice, (response, data) -&gt; {
+    if (response != BlueteethResponse.NO_ERROR) {
+        Timber.e("Read error - %s",  response.name());
+        return;
     }
+    Timber.d("Just connected and read the following data... %s",  Arrays.toString(data));
 });</pre> 
 
 Check out the sample app in `blueteeth-sample/` to see the API in action. 
@@ -97,7 +113,7 @@ Now that this library is released and progressively becoming more stable, the ne
 ## Download
 
 ```groovy
-compile 'com.robotpajamas.blueteeth:blueteeth:0.1.1'
+compile 'com.robotpajamas.blueteeth:blueteeth:0.2.0'
 ```
 
 ## Issues

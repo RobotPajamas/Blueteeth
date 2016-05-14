@@ -196,6 +196,7 @@ public class BlueteethDevice {
     }
 
     public boolean discoverServices(OnServicesDiscoveredListener onServicesDiscoveredListener) {
+        Timber.d("discoverServices: Attempting to discover services");
         if (!mIsConnected || mBluetoothGatt == null) {
             Timber.e("discoverServices: Device is not connected, or GATT is null");
             return false;
@@ -207,6 +208,8 @@ public class BlueteethDevice {
     }
 
     public boolean readCharacteristic(@NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicReadListener onCharacteristicReadListener) {
+        Timber.d("readCharacteristic: Attempting to read %s", characteristic.toString());
+
         if (!mIsConnected || mBluetoothGatt == null) {
             Timber.e("readCharacteristic: Device is not connected, or GATT is null");
             return false;
@@ -230,6 +233,8 @@ public class BlueteethDevice {
     }
 
     public boolean writeCharacteristic(@NonNull byte[] data, @NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicWriteListener onCharacteristicWriteListener) {
+        Timber.d("writeCharacteristic: Attempting to write %s to %s", Arrays.toString(data), characteristic.toString());
+
         if (!mIsConnected || mBluetoothGatt == null) {
             Timber.e("writeCharacteristic: Device is not connected, or GATT is null");
             return false;
@@ -293,7 +298,6 @@ public class BlueteethDevice {
                     mContext.registerReceiver(mBroadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
 
                     if (mConnectionChangedListener != null) {
-                        Timber.e("STATE_CONNECTED - Callback Fired");
                         mConnectionChangedListener.call(true);
 //                            mConnectionChangedListener = null;
                     }
@@ -310,10 +314,13 @@ public class BlueteethDevice {
                     mIsConnected = false;
 
                     // Unregister for Bonding notifications
-                    mContext.unregisterReceiver(mBroadcastReceiver);
+                    try {
+                        mContext.unregisterReceiver(mBroadcastReceiver);
+                    } catch (Exception e) {
+                        Timber.e(e.toString());
+                    }
 
                     if (mConnectionChangedListener != null) {
-                        Timber.e("STATE_DISCONNECTED - Callback Fired");
                         mConnectionChangedListener.call(false);
 //                            mConnectionChangedListener = null;
                     }

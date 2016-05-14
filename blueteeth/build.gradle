@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 
 // Manifest version information
 def versionMajor = 0
-def versionMinor = 1
-def versionPatch = 1
+def versionMinor = 2
+def versionPatch = 0
 
 ext {
     bintrayRepo = 'maven'
