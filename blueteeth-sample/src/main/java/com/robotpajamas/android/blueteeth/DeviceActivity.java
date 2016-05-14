@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.robotpajamas.android.blueteeth.peripherals.SamplePeripheral;
 import com.robotpajamas.blueteeth.BlueteethManager;
 import com.robotpajamas.blueteeth.BlueteethResponse;
+import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener;
 
 import java.util.Arrays;
 
@@ -30,14 +31,20 @@ public class DeviceActivity extends Activity {
     @Bind(R.id.button_connect)
     Button mConnectionButton;
 
-    @Bind(R.id.button_read_counter)
-    Button mReadCounterButton;
-
     @Bind(R.id.button_write)
     Button mWriteButton;
 
     @Bind(R.id.button_write_no_response)
     Button mWriteNoResponseButton;
+
+    @Bind(R.id.button_read_counter)
+    Button mReadCounterButton;
+
+    @Bind(R.id.button_toggle_notify)
+    Button mToggleNotifyButton;
+
+    @Bind(R.id.button_toggle_indicate)
+    Button mToggleIndicateButton;
 
     @OnClick(R.id.button_clear)
     void clearConsole() {
@@ -55,7 +62,7 @@ public class DeviceActivity extends Activity {
             });
         } else {
             updateReceivedData(String.format("Attempting to connect to  %s - %s...", mSamplePeripheral.getName(), mSamplePeripheral.getMacAddress()));
-            mSamplePeripheral.connect(true, isConnected -> {
+            mSamplePeripheral.connect(false, isConnected -> {
                 updateReceivedData("Connection Status: " + Boolean.toString(isConnected));
                 mIsConnected = isConnected;
                 runOnUiThread(mConnectionRunnable);
@@ -68,14 +75,18 @@ public class DeviceActivity extends Activity {
         public void run() {
             if (mIsConnected) {
                 mConnectionButton.setText(R.string.disconnect);
-                mReadCounterButton.setEnabled(true);
                 mWriteButton.setEnabled(true);
                 mWriteNoResponseButton.setEnabled(true);
+                mReadCounterButton.setEnabled(true);
+                mToggleNotifyButton.setEnabled(true);
+                mToggleIndicateButton.setEnabled(true);
             } else {
                 mConnectionButton.setText(R.string.connect);
-                mReadCounterButton.setEnabled(false);
                 mWriteButton.setEnabled(false);
                 mWriteNoResponseButton.setEnabled(false);
+                mReadCounterButton.setEnabled(false);
+                mToggleNotifyButton.setEnabled(false);
+                mToggleIndicateButton.setEnabled(false);
             }
         }
     };
@@ -88,7 +99,20 @@ public class DeviceActivity extends Activity {
                 updateReceivedData("Read error... " + response.name());
                 return;
             }
+            updateReceivedData(Arrays.toString(data));
+        });
+    }
 
+    private boolean mNotifyEnabled = false;
+    @OnClick(R.id.button_toggle_notify)
+    void toggleNotify() {
+        mNotifyEnabled = !mNotifyEnabled;
+        updateReceivedData("Toggle notifications ...");
+        mSamplePeripheral.toggleNotification(mNotifyEnabled, (response, data) -> {
+            if (response != BlueteethResponse.NO_ERROR) {
+                updateReceivedData("Notification error... " + response.name());
+                return;
+            }
             updateReceivedData(Arrays.toString(data));
         });
     }

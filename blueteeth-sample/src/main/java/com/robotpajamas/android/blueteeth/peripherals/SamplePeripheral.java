@@ -43,6 +43,14 @@ public class SamplePeripheral extends BaseBluetoothPeripheral {
         BlueteethUtils.read(CHARACTERISTIC_READ, SERVICE_TEST, mPeripheral, readListener);
     }
 
+    public void toggleNotification(boolean isEnabled, OnCharacteristicReadListener readListener) {
+        if (isEnabled) {
+            mPeripheral.addNotification(CHARACTERISTIC_NOTIFY, SERVICE_TEST, readListener);
+        } else {
+//            mPeripheral.removeNotifications(CHARACTERISTIC_NOTIFY, SERVICE_TEST);
+        }
+    }
+
     public void writeEcho(byte[] dataToWrite, OnCharacteristicWriteListener writeListener) {
         BlueteethUtils.writeData(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, mPeripheral, writeListener);
         mPeripheral.writeCharacteristic(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, writeListener);

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
@@ -22,6 +23,8 @@ import com.robotpajamas.blueteeth.listeners.OnConnectionChangedListener;
 import com.robotpajamas.blueteeth.listeners.OnServicesDiscoveredListener;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -47,6 +50,8 @@ public class BlueteethDevice {
     private OnCharacteristicWriteListener mCharacteristicWriteListener;
     @Nullable
     private OnBondingChangedListener mBondingChangedListener;
+
+    private Map<String, OnCharacteristicReadListener> mNotificationMap = new HashMap<>();
 
     private final String mName;
 
@@ -122,7 +127,6 @@ public class BlueteethDevice {
         // TODO: Does this need to be dependency injected for testing?
         mHandler = new Handler(Looper.getMainLooper());
     }
-
 
     BlueteethDevice(Context context, BluetoothDevice device) {
         mBluetoothDevice = device;
@@ -261,6 +265,66 @@ public class BlueteethDevice {
         return true;
     }
 
+    public boolean addNotification(@NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicReadListener characteristicReadListener) {
+        Timber.d("addNotification: Adding Notification listener to %s", characteristic.toString());
+
+        if (mBluetoothGatt == null) {
+            Timber.e("addNotification: GATT is null");
+            return false;
+        }
+
+        BluetoothGattService gattService = mBluetoothGatt.getService(service);
+        if (gattService == null) {
+            Timber.e("addNotification: Service not available - %s", service.toString());
+            return false;
+        }
+
+        BluetoothGattCharacteristic gattCharacteristic = gattService.getCharacteristic(characteristic);
+        if (gattCharacteristic == null) {
+            Timber.e("addNotification: Characteristic not available - %s", characteristic.toString());
+            return false;
+        }
+
+        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
+        if (gattDescriptor == null) {
+            Timber.e("addNotification: Descriptor not available - %s", characteristic.toString());
+            return false;
+        }
+
+        mNotificationMap.put(characteristic.toString(), characteristicReadListener);
+        mBluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
+        gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        mBluetoothGatt.writeDescriptor(gattDescriptor);
+        return true;
+    }
+
+    public boolean addIndication(@NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicReadListener characteristicReadListener) {
+        Timber.d("addIndication: Adding Notification listener to %s", characteristic.toString());
+
+        if (mBluetoothGatt == null) {
+            Timber.e("addIndication: GATT is null");
+            return false;
+        }
+
+        BluetoothGattService gattService = mBluetoothGatt.getService(service);
+        if (gattService == null) {
+            Timber.e("addIndication: Service not available - %s", service.toString());
+            return false;
+        }
+
+        BluetoothGattCharacteristic gattCharacteristic = gattService.getCharacteristic(characteristic);
+        if (gattCharacteristic == null) {
+            Timber.e("addIndication: Characteristic not available - %s", characteristic.toString());
+            return false;
+        }
+
+        mBluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
+        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(characteristic);
+        gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
+        mBluetoothGatt.writeDescriptor(gattDescriptor);
+        return true;
+    }
+
     public void close() {
         if (mBluetoothGatt != null) {
             mBluetoothGatt.disconnect();
@@ -396,6 +460,8 @@ public class BlueteethDevice {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
             Timber.d("OnCharacteristicChanged - gatt: %s, characteristic: %s ", gatt.toString(), characteristic.toString());
+
+            mNotificationMap.get(characteristic.getUuid().toString()).call(BlueteethResponse.NO_ERROR, characteristic.getValue());
         }
     };
 
