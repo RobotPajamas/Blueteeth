@@ -298,7 +298,6 @@ public class BlueteethDevice {
                     mContext.registerReceiver(mBroadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
 
                     if (mConnectionChangedListener != null) {
-                        Timber.e("STATE_CONNECTED - Callback Fired");
                         mConnectionChangedListener.call(true);
 //                            mConnectionChangedListener = null;
                     }
@@ -322,7 +321,6 @@ public class BlueteethDevice {
                     }
 
                     if (mConnectionChangedListener != null) {
-                        Timber.e("STATE_DISCONNECTED - Callback Fired");
                         mConnectionChangedListener.call(false);
 //                            mConnectionChangedListener = null;
                     }
