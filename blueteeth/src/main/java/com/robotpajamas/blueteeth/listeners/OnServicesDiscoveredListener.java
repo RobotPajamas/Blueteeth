@@ -1,5 +1,7 @@
 package com.robotpajamas.blueteeth.listeners;
 
+import com.robotpajamas.blueteeth.BlueteethResponse;
+
 public interface OnServicesDiscoveredListener {
-    void onServicesDiscovered();
+    void call(BlueteethResponse response);
 }

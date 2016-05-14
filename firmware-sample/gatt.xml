@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <service uuid="1800">
+        <description>Generic Access Profile</description>
+
+        <characteristic uuid="2a00">
+            <properties read="true" const="true" />
+            <value>RPJ Blueteeth</value>
+        </characteristic>
+
+        <characteristic uuid="2a01">
+            <properties read="true" const="true" />
+            <value type="hex">0000</value>
+        </characteristic>
+    </service>
+    
+    <service type="primary" uuid="180A" id="manufacturer">
+        <description>Device Information</description>
+
+        <characteristic uuid="2A29">
+            <description>Manufacturer Name String</description>
+            <properties read="true" const="true" />
+            <value>Robot Pajamas</value>
+        </characteristic>
+
+        <characteristic uuid="2A24">
+            <description>Model Number String</description>
+            <properties read="true" const="true" />
+            <value>RPJ-1</value>
+        </characteristic>
+        
+        <characteristic uuid="2A25" id="xgatt_serial_number">
+            <description>Serial Number String</description>
+            <properties read="true" />
+            <value length="17" />
+        </characteristic>
+
+        <characteristic uuid="2A27">
+            <description>Hardware Revision String</description>
+            <properties read="true" const="true" />
+            <value>RPJ-1</value>
+        </characteristic>
+
+        <characteristic uuid="2A26">
+            <description>Firmware Revision String</description>
+            <properties read="true" const="true" />
+            <value>1.0.0</value>
+        </characteristic>
+
+        <characteristic uuid="2A28">
+            <description>Software Revision String</description>
+            <properties read="true" const="true" />
+            <value>1.0.0</value>
+        </characteristic>
+    </service>
+
+    <service uuid="00726f62-6f74-7061-6a61-6d61732e6361">
+        <description>Test Service</description>
+        
+        <characteristic uuid="01726f62-6f74-7061-6a61-6d61732e6361" id="xgatt_write">
+            <description>Write Counter</description>
+            <properties write="true" />
+            <value length="1"  />
+        </characteristic>
+
+        <characteristic uuid="02726f62-6f74-7061-6a61-6d61732e6361" id="xgatt_write_no_response">
+            <description>Write No Response Counter</description>
+            <properties write_no_response="true" />
+            <value length="1" />
+        </characteristic>
+
+        <characteristic uuid="03726f62-6f74-7061-6a61-6d61732e6361" id="xgatt_read">
+            <description>Read Counter</description>
+            <properties read="true" />
+            <value length="1" />
+        </characteristic>  
+
+        <characteristic uuid="04726f62-6f74-7061-6a61-6d61732e6361" id="xgatt_notify">
+            <description>Notify Counter</description>
+            <properties read="true" notify="true" />
+            <value length="1" />
+        </characteristic>
+
+        <characteristic uuid="05726f62-6f74-7061-6a61-6d61732e6361" id="xgatt_indicate">
+            <description>Indicate Counter</description>
+            <properties read="true" indicate="true" />
+            <value length="1" />
+        </characteristic>
+
+        <characteristic uuid="06726f62-6f74-7061-6a61-6d61732e6361" id="xgatt_write_echo">
+            <description>Write Echo</description>
+            <properties write="true" write_no_response="true" />
+            <value length="20" />
+        </characteristic>
+
+        <characteristic uuid="07726f62-6f74-7061-6a61-6d61732e6361" id="xgatt_read_echo">
+            <description>Read Echo</description>
+            <properties read="true" notify="true" indicate="true" />
+            <value length="20" />
+        </characteristic>
+
+    </service>
+    
+</configuration>
