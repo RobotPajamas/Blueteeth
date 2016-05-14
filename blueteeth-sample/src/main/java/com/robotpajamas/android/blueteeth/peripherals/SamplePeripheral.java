@@ -34,6 +34,11 @@ public class SamplePeripheral extends BaseBluetoothPeripheral {
         BlueteethUtils.writeData(data, CHARACTERISTIC_WRITE, SERVICE_TEST, mPeripheral, writeListener);
     }
 
+    public void writeNoResponseCounter(byte value) {
+        byte[] data = new byte[]{value};
+        BlueteethUtils.writeData(data, CHARACTERISTIC_WRITE_NO_RESPONSE, SERVICE_TEST, mPeripheral, null);
+    }
+
     public void readCounter(OnCharacteristicReadListener readListener) {
         BlueteethUtils.read(CHARACTERISTIC_READ, SERVICE_TEST, mPeripheral, readListener);
     }

@@ -33,8 +33,11 @@ public class DeviceActivity extends Activity {
     @Bind(R.id.button_read_counter)
     Button mReadCounterButton;
 
-    @Bind(R.id.button_write_counter)
-    Button mWriteCounterButton;
+    @Bind(R.id.button_write)
+    Button mWriteButton;
+
+    @Bind(R.id.button_write_no_response)
+    Button mWriteNoResponseButton;
 
     @OnClick(R.id.button_clear)
     void clearConsole() {
@@ -66,11 +69,13 @@ public class DeviceActivity extends Activity {
             if (mIsConnected) {
                 mConnectionButton.setText(R.string.disconnect);
                 mReadCounterButton.setEnabled(true);
-                mWriteCounterButton.setEnabled(true);
+                mWriteButton.setEnabled(true);
+                mWriteNoResponseButton.setEnabled(true);
             } else {
                 mConnectionButton.setText(R.string.connect);
                 mReadCounterButton.setEnabled(false);
-                mWriteCounterButton.setEnabled(false);
+                mWriteButton.setEnabled(false);
+                mWriteNoResponseButton.setEnabled(false);
             }
         }
     };
@@ -88,8 +93,8 @@ public class DeviceActivity extends Activity {
         });
     }
 
-    @OnClick(R.id.button_write_counter)
-    void writeCharacteristic() {
+    @OnClick(R.id.button_write)
+    void write() {
         updateReceivedData("Attempting to Reset Counter ...");
         mSamplePeripheral.writeCounter((byte) 42, response -> {
             if (response != BlueteethResponse.NO_ERROR) {
@@ -98,6 +103,12 @@ public class DeviceActivity extends Activity {
             }
             updateReceivedData("Counter characteristic reset to 42");
         });
+    }
+
+    @OnClick(R.id.button_write_no_response)
+    void writeNoResponse() {
+        updateReceivedData("Resetting Counter with No Response ...");
+        mSamplePeripheral.writeNoResponseCounter((byte) 42);
     }
 
     @Override

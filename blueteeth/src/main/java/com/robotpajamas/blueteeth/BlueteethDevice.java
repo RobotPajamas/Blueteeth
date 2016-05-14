@@ -207,7 +207,7 @@ public class BlueteethDevice {
         return true;
     }
 
-    public boolean readCharacteristic(@NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicReadListener onCharacteristicReadListener) {
+    public boolean readCharacteristic(@NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicReadListener characteristicReadListener) {
         Timber.d("readCharacteristic: Attempting to read %s", characteristic.toString());
 
         if (!mIsConnected || mBluetoothGatt == null) {
@@ -215,7 +215,7 @@ public class BlueteethDevice {
             return false;
         }
 
-        mCharacteristicReadListener = onCharacteristicReadListener;
+        mCharacteristicReadListener = characteristicReadListener;
         BluetoothGattService gattService = mBluetoothGatt.getService(service);
         if (gattService == null) {
             Timber.e("readCharacteristic: Service not available - %s", service.toString());
@@ -232,7 +232,7 @@ public class BlueteethDevice {
         return true;
     }
 
-    public boolean writeCharacteristic(@NonNull byte[] data, @NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicWriteListener onCharacteristicWriteListener) {
+    public boolean writeCharacteristic(@NonNull byte[] data, @NonNull UUID characteristic, @NonNull UUID service, @Nullable OnCharacteristicWriteListener characteristicWriteListener) {
         Timber.d("writeCharacteristic: Attempting to write %s to %s", Arrays.toString(data), characteristic.toString());
 
         if (!mIsConnected || mBluetoothGatt == null) {
@@ -240,7 +240,7 @@ public class BlueteethDevice {
             return false;
         }
 
-        mCharacteristicWriteListener = onCharacteristicWriteListener;
+        mCharacteristicWriteListener = characteristicWriteListener;
         BluetoothGattService gattService = mBluetoothGatt.getService(service);
         if (gattService == null) {
             Timber.e("writeCharacteristic: Service not available - %s", service.toString());
@@ -254,6 +254,9 @@ public class BlueteethDevice {
         }
 
         gattCharacteristic.setValue(data);
+        if (mCharacteristicWriteListener == null) {
+            gattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+        }
         mHandler.post(() -> mBluetoothGatt.writeCharacteristic(gattCharacteristic));
         return true;
     }
