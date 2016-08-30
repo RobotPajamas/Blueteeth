@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
@@ -16,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.robotpajamas.blueteeth.listeners.OnBondingChangedListener;
+import com.robotpajamas.blueteeth.listeners.OnCharacteristicChangedListener;
 import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener;
 import com.robotpajamas.blueteeth.listeners.OnCharacteristicWriteListener;
 import com.robotpajamas.blueteeth.listeners.OnConnectionChangedListener;
@@ -45,6 +47,11 @@ public class BlueteethDevice {
     private OnCharacteristicReadListener mCharacteristicReadListener;
     @Nullable
     private OnCharacteristicWriteListener mCharacteristicWriteListener;
+    @Nullable
+    private OnCharacteristicChangedListener mCharacteristicChangedListener;
+    private UUID notifyCharacteristicUUID;
+    private UUID serviceNotifyUUID;
+
     @Nullable
     private OnBondingChangedListener mBondingChangedListener;
 
@@ -155,6 +162,14 @@ public class BlueteethDevice {
         // TODO: Should I grab the application context from the BlueteethManager? Seems odd...
         mHandler.post(() -> mBluetoothGatt = mBluetoothDevice.connectGatt(null, autoReconnect, mGattCallback));
         return true;
+    }
+
+    public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, OnCharacteristicChangedListener mCharacteristicChangedListener, UUID serviceNotifyUUID, UUID notifyCharacteristicUUID) {
+        this.mConnectionChangedListener = onConnectionChangedListener;
+        this.mCharacteristicChangedListener = mCharacteristicChangedListener;
+        this.notifyCharacteristicUUID = notifyCharacteristicUUID;
+        this.serviceNotifyUUID = serviceNotifyUUID;
+        return connect(autoReconnect);
     }
 
     public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener) {
@@ -393,6 +408,10 @@ public class BlueteethDevice {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
             Timber.d("OnCharacteristicChanged - gatt: %s, characteristic: %s ", gatt.toString(), characteristic.toString());
+            if (mCharacteristicChangedListener != null) {
+                BlueteethResponse response = BlueteethResponse.NO_ERROR;
+                mCharacteristicChangedListener.call(response, characteristic.getValue());
+            }
         }
     };
 
@@ -442,5 +461,22 @@ public class BlueteethDevice {
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    public boolean setCharacteristicNotification(BluetoothDevice device, UUID serviceUuid, UUID characteristicUuid,
+                                                 boolean enable) {
+        Timber.d("setCharacteristicNotification(device=" + device.getName() + device.getAddress() + ", UUID="
+                + characteristicUuid + ", enable=" + enable + " )");
+        BluetoothGattCharacteristic characteristic = mBluetoothGatt.getService(serviceUuid).getCharacteristic(characteristicUuid);
+        mBluetoothGatt.setCharacteristicNotification(characteristic, enable);
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
+        descriptor.setValue(enable ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : new byte[]{0x00, 0x00});
+        return mBluetoothGatt.writeDescriptor(descriptor); //descriptor write operation successfully started?
+    }
+    public void registerNotifyOnCharacteristicChanged(){
+        if (mCharacteristicChangedListener != null) {
+            boolean successRegisterNotify = setCharacteristicNotification(mBluetoothDevice, serviceNotifyUUID, notifyCharacteristicUUID, true);
+            Timber.e("onSetCharacteristicNotification - success: " + successRegisterNotify);
+        }
     }
 }
