@@ -23,7 +23,9 @@ import com.robotpajamas.blueteeth.listeners.OnCharacteristicWriteListener;
 import com.robotpajamas.blueteeth.listeners.OnConnectionChangedListener;
 import com.robotpajamas.blueteeth.listeners.OnServicesDiscoveredListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -47,15 +49,12 @@ public class BlueteethDevice {
     private OnCharacteristicReadListener mCharacteristicReadListener;
     @Nullable
     private OnCharacteristicWriteListener mCharacteristicWriteListener;
-    @Nullable
-    private OnCharacteristicChangedListener mCharacteristicChangedListener;
-    private UUID notifyCharacteristicUUID;
-    private UUID serviceNotifyUUID;
 
     @Nullable
     private OnBondingChangedListener mBondingChangedListener;
 
     private final String mName;
+    private HashMap<String, OnCharacteristicChangedListener> mCharacteristicChangedListenerMap;
 
     public String getName() {
         return mName;
@@ -164,11 +163,12 @@ public class BlueteethDevice {
         return true;
     }
 
-    public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, OnCharacteristicChangedListener mCharacteristicChangedListener, UUID serviceNotifyUUID, UUID notifyCharacteristicUUID) {
+    public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, ArrayList<OnCharacteristicChangedListener> characteristicChangedListenerList) {
         this.mConnectionChangedListener = onConnectionChangedListener;
-        this.mCharacteristicChangedListener = mCharacteristicChangedListener;
-        this.notifyCharacteristicUUID = notifyCharacteristicUUID;
-        this.serviceNotifyUUID = serviceNotifyUUID;
+        this.mCharacteristicChangedListenerMap = new HashMap<String, OnCharacteristicChangedListener>();
+        for (OnCharacteristicChangedListener listener : characteristicChangedListenerList) {
+            mCharacteristicChangedListenerMap.put(listener.getServiceUUID().toString() + listener.getCharacteristicUUID().toString(), listener);
+        }
         return connect(autoReconnect);
     }
 
@@ -408,9 +408,11 @@ public class BlueteethDevice {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
             Timber.d("OnCharacteristicChanged - gatt: %s, characteristic: %s ", gatt.toString(), characteristic.toString());
-            if (mCharacteristicChangedListener != null) {
+
+            OnCharacteristicChangedListener onCharacteristicChangedListener = mCharacteristicChangedListenerMap.get(characteristic.getService().getUuid().toString() + characteristic.getUuid().toString());
+            if (onCharacteristicChangedListener != null) {
                 BlueteethResponse response = BlueteethResponse.NO_ERROR;
-                mCharacteristicChangedListener.call(response, characteristic.getValue());
+                onCharacteristicChangedListener.call(response, characteristic.getValue());
             }
         }
     };
@@ -473,9 +475,10 @@ public class BlueteethDevice {
         descriptor.setValue(enable ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : new byte[]{0x00, 0x00});
         return mBluetoothGatt.writeDescriptor(descriptor); //descriptor write operation successfully started?
     }
-    public void registerNotifyOnCharacteristicChanged(){
-        if (mCharacteristicChangedListener != null) {
-            boolean successRegisterNotify = setCharacteristicNotification(mBluetoothDevice, serviceNotifyUUID, notifyCharacteristicUUID, true);
+
+    public void registerNotifyOnCharacteristicChanged() {
+        for (OnCharacteristicChangedListener listener : mCharacteristicChangedListenerMap.values()) {
+            boolean successRegisterNotify = setCharacteristicNotification(mBluetoothDevice, listener.getServiceUUID(), listener.getCharacteristicUUID(), true);
             Timber.e("onSetCharacteristicNotification - success: " + successRegisterNotify);
         }
     }
