@@ -8,6 +8,8 @@ Blueteeth is a simple, lightweight library intended to take away some of the cru
 
 It was inspired by the simplicity and ease-of-use of [LGBluetooth](https://github.com/l0gg3r/LGBluetooth) on iOS.
 
+The upcoming iOS companion library is [SwiftyTeeth](https://github.com/RobotPajamas/SwiftyTeeth).
+
 ## High-Level
 
 An underlying motivator of this BLE library was to build something that didn't require platform-specific hacks. 
