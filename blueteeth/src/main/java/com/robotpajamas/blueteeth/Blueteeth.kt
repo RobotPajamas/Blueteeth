@@ -14,23 +14,32 @@ import timber.log.Timber
 
 // TODO: Fix support for pre-Lollipop vs post
 // TODO: Make this less depedendent on the Context?
-class Blueteeth private constructor() {
+
+object Blueteeth {
+//class Blueteeth private constructor() {
     init {
         println("($this) is in initialization")
     }
 
-    private object Holder {
-        val INSTANCE = Blueteeth()
-    }
+//    private object Holder {
+//        val INSTANCE by lazy { Blueteeth() }
+//    }
 
-    companion object {
-        // Using this syntax to keep the usage compatible with Blueteeth 0.2.0
-        // TODO: Update this to something closer to Swift or more Kotlin-esque
-        @JvmStatic fun with(context: Context): Blueteeth {
-            return Holder.INSTANCE
-        }
-
-    }
+    // TODO: This is a horrible pattern - fix this, probably not threadsafe
+//    companion object {
+//        private var instance: Blueteeth? = null
+//
+//        // Using this syntax to keep the usage compatible with Blueteeth 0.2.0
+//        // TODO: Update this to something closer to Swift or more Kotlin-esque
+//        @JvmStatic fun with(context: Context): Blueteeth {
+//            Timber.e("in With statement")
+//            if (instance == null) {
+//                instance = Blueteeth(context)
+//            }
+//            return instance!!
+//        }
+//
+//    }
 
     private var mContext: Context? = null
     private var mBLEAdapter: BluetoothAdapter? = null
@@ -79,7 +88,8 @@ class Blueteeth private constructor() {
     private val mLogLevel = LogLevel.None
 
     @Throws(RuntimeException::class)
-    private constructor(context: Context) : this() {
+    fun init(context: Context) {
+        Timber.e("In Constructor")
         // Grab the application context in case an activity context was passed in
         mContext = context.applicationContext
 
@@ -151,7 +161,7 @@ class Blueteeth private constructor() {
         Timber.d("scanForPeripherals")
         clearPeripherals()
         isScanning = true
-        mBLEAdapter!!.startLeScan(mBLEScanCallback)
+        mBLEAdapter?.startLeScan(mBLEScanCallback)
     }
 
     private fun clearPeripherals() {
@@ -169,7 +179,7 @@ class Blueteeth private constructor() {
     fun stopScanForPeripherals() {
         Timber.d("stopScanForPeripherals")
         isScanning = false
-        mBLEAdapter!!.stopLeScan(mBLEScanCallback)
+        mBLEAdapter?.stopLeScan(mBLEScanCallback)
         mOnScanCompletedListener?.call(mScannedPeripherals)
         mOnScanCompletedListener = null
         mOnDeviceDiscoveredListener = null
