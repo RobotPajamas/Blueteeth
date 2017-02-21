@@ -73,7 +73,7 @@ class BlueteethDevice private constructor() {
      * Default constructor with invalid values - only here to help
      * with testability and Mock extensions
      */
-//    internal constructor() {
+    //    internal constructor() {
 //        name = "Invalid"
 //        macAddress = "00:00:00:00:00:00"
 //        bluetoothDevice = null
@@ -83,8 +83,8 @@ class BlueteethDevice private constructor() {
 
     internal constructor(context: Context, device: BluetoothDevice) : this() {
         bluetoothDevice = device
-        name = device.name
-        macAddress = device.address
+        name = device.name ?: ""
+        macAddress = device.address ?: ""
         // TODO: Need this for registering to the bonding process - ugly...
         mContext = context
     }
@@ -218,59 +218,58 @@ class BlueteethDevice private constructor() {
     fun subscribeTo(characteristic: UUID, service: UUID, characteristicReadListener: OnCharacteristicReadListener): Boolean {
         Timber.d("subscribeTo: Adding Notification listener to %s", characteristic.toString())
 
-        if (mBluetoothGatt == null || !isConnected) {
+        guard(mBluetoothGatt != null && isConnected) {
             Timber.e("subscribeTo: GATT is null or not connected")
             return false
         }
 
         val gattService = mBluetoothGatt?.getService(service)
-        if (gattService == null) {
+        guard(gattService != null) {
             Timber.e("subscribeTo: Service not available - %s", service.toString())
             return false
         }
 
-        val gattCharacteristic = gattService.getCharacteristic(characteristic)
-        if (gattCharacteristic == null) {
+        val gattCharacteristic = gattService?.getCharacteristic(characteristic)
+        guard(gattCharacteristic != null) {
             Timber.e("subscribeTo: Characteristic not available - %s", characteristic.toString())
             return false
         }
 
-        val gattDescriptor = gattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
-        if (gattDescriptor == null) {
+        val gattDescriptor = gattCharacteristic?.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
+        guard(gattDescriptor != null) {
             Timber.e("subscribeTo: Descriptor not available - %s", characteristic.toString())
             return false
         }
 
         mNotificationMap.put(characteristic.toString(), characteristicReadListener)
         mBluetoothGatt?.setCharacteristicNotification(gattCharacteristic, true)
-        gattDescriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        gattDescriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
         mBluetoothGatt?.writeDescriptor(gattDescriptor)
         return true
     }
 
     fun indicateFrom(characteristic: UUID, service: UUID, characteristicReadListener: OnCharacteristicReadListener): Boolean {
         Timber.d("indicateFrom: Adding Notification listener to %s", characteristic.toString())
-
-        if (mBluetoothGatt == null || !isConnected) {
+        guard(mBluetoothGatt != null && isConnected) {
             Timber.e("indicateFrom: GATT is null")
             return false
         }
 
         val gattService = mBluetoothGatt?.getService(service)
-        if (gattService == null) {
+        guard(gattService != null) {
             Timber.e("indicateFrom: Service not available - %s", service.toString())
             return false
         }
 
-        val gattCharacteristic = gattService.getCharacteristic(characteristic)
-        if (gattCharacteristic == null) {
+        val gattCharacteristic = gattService?.getCharacteristic(characteristic)
+        guard(gattCharacteristic != null) {
             Timber.e("indicateFrom: Characteristic not available - %s", characteristic.toString())
             return false
         }
 
         mBluetoothGatt?.setCharacteristicNotification(gattCharacteristic, true)
-        val gattDescriptor = gattCharacteristic.getDescriptor(characteristic)
-        gattDescriptor.value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+        val gattDescriptor = gattCharacteristic?.getDescriptor(characteristic)
+        gattDescriptor?.value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
         mBluetoothGatt?.writeDescriptor(gattDescriptor)
         return true
     }
@@ -340,58 +339,61 @@ class BlueteethDevice private constructor() {
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             super.onServicesDiscovered(gatt, status)
             Timber.d("onServicesDiscovered - gatt: %s, status: %s", gatt.toString(), status)
-
-            if (mServicesDiscoveredListener != null) {
-                var response = BlueteethResponse.NO_ERROR
-                if (status == BluetoothGatt.GATT_SUCCESS) {
-                    Timber.d("onServicesDiscovered - Success")
-                } else {
-                    Timber.e("onServicesDiscovered - Failed with status: " + status)
-                    response = BlueteethResponse.ERROR
-                }
-                mServicesDiscoveredListener?.call(response)
-                mServicesDiscoveredListener = null
+            guard(mServicesDiscoveredListener != null) {
+                return
             }
+
+            var response = BlueteethResponse.NO_ERROR
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                Timber.d("onServicesDiscovered - Success")
+            } else {
+                Timber.e("onServicesDiscovered - Failed with status: " + status)
+                response = BlueteethResponse.ERROR
+            }
+            mServicesDiscoveredListener?.call(response)
+            mServicesDiscoveredListener = null
         }
 
         override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
             super.onCharacteristicRead(gatt, characteristic, status)
             Timber.d("onCharacteristicRead - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString())
 
-            if (mCharacteristicReadListener != null) {
-                var response = BlueteethResponse.NO_ERROR
-                var readData = ByteArray(0)
-
-                if (status == BluetoothGatt.GATT_SUCCESS) {
-                    Timber.d("onCharacteristicRead - Success")
-                    readData = characteristic.value
-                } else {
-                    Timber.e("onCharacteristicRead - Failed with status: " + status)
-                    response = BlueteethResponse.ERROR
-                }
-
-                mCharacteristicReadListener?.call(response, readData)
-                mCharacteristicReadListener = null
+            guard(mCharacteristicReadListener != null) {
+                return
             }
+
+            var response = BlueteethResponse.NO_ERROR
+            var readData = ByteArray(0)
+
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                Timber.d("onCharacteristicRead - Success")
+                readData = characteristic.value
+            } else {
+                Timber.e("onCharacteristicRead - Failed with status: " + status)
+                response = BlueteethResponse.ERROR
+            }
+
+            mCharacteristicReadListener?.call(response, readData)
+            mCharacteristicReadListener = null
         }
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
             super.onCharacteristicWrite(gatt, characteristic, status)
             Timber.d("onCharacteristicWrite - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString())
-
-            if (mCharacteristicWriteListener != null) {
-                var response = BlueteethResponse.NO_ERROR
-
-                if (status == BluetoothGatt.GATT_SUCCESS) {
-                    Timber.d("onCharacteristicWrite - Success")
-                } else {
-                    Timber.e("onCharacteristicWrite - Failed with status: " + status)
-                    response = BlueteethResponse.ERROR
-                }
-
-                mCharacteristicWriteListener?.call(response)
-                mCharacteristicWriteListener = null
+            guard(mCharacteristicWriteListener != null) {
+                return
             }
+
+            var response = BlueteethResponse.NO_ERROR
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                Timber.d("onCharacteristicWrite - Success")
+            } else {
+                Timber.e("onCharacteristicWrite - Failed with status: " + status)
+                response = BlueteethResponse.ERROR
+            }
+
+            mCharacteristicWriteListener?.call(response)
+            mCharacteristicWriteListener = null
         }
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
@@ -426,5 +428,11 @@ class BlueteethDevice private constructor() {
                 }
             }
         }
+    }
+}
+
+inline fun guard(condition: Boolean, body: () -> Void) {
+    if (!condition) {
+        body()
     }
 }
