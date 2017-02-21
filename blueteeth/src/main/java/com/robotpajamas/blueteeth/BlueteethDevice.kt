@@ -215,29 +215,29 @@ class BlueteethDevice private constructor() {
         return true
     }
 
-    fun addNotification(characteristic: UUID, service: UUID, characteristicReadListener: OnCharacteristicReadListener): Boolean {
-        Timber.d("addNotification: Adding Notification listener to %s", characteristic.toString())
+    fun subscribeTo(characteristic: UUID, service: UUID, characteristicReadListener: OnCharacteristicReadListener): Boolean {
+        Timber.d("subscribeTo: Adding Notification listener to %s", characteristic.toString())
 
-        if (mBluetoothGatt == null) {
-            Timber.e("addNotification: GATT is null")
+        if (mBluetoothGatt == null || !isConnected) {
+            Timber.e("subscribeTo: GATT is null or not connected")
             return false
         }
 
         val gattService = mBluetoothGatt?.getService(service)
         if (gattService == null) {
-            Timber.e("addNotification: Service not available - %s", service.toString())
+            Timber.e("subscribeTo: Service not available - %s", service.toString())
             return false
         }
 
         val gattCharacteristic = gattService.getCharacteristic(characteristic)
         if (gattCharacteristic == null) {
-            Timber.e("addNotification: Characteristic not available - %s", characteristic.toString())
+            Timber.e("subscribeTo: Characteristic not available - %s", characteristic.toString())
             return false
         }
 
         val gattDescriptor = gattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
         if (gattDescriptor == null) {
-            Timber.e("addNotification: Descriptor not available - %s", characteristic.toString())
+            Timber.e("subscribeTo: Descriptor not available - %s", characteristic.toString())
             return false
         }
 
@@ -248,23 +248,23 @@ class BlueteethDevice private constructor() {
         return true
     }
 
-    fun addIndication(characteristic: UUID, service: UUID, characteristicReadListener: OnCharacteristicReadListener): Boolean {
-        Timber.d("addIndication: Adding Notification listener to %s", characteristic.toString())
+    fun indicateFrom(characteristic: UUID, service: UUID, characteristicReadListener: OnCharacteristicReadListener): Boolean {
+        Timber.d("indicateFrom: Adding Notification listener to %s", characteristic.toString())
 
-        if (mBluetoothGatt == null) {
-            Timber.e("addIndication: GATT is null")
+        if (mBluetoothGatt == null || !isConnected) {
+            Timber.e("indicateFrom: GATT is null")
             return false
         }
 
         val gattService = mBluetoothGatt?.getService(service)
         if (gattService == null) {
-            Timber.e("addIndication: Service not available - %s", service.toString())
+            Timber.e("indicateFrom: Service not available - %s", service.toString())
             return false
         }
 
         val gattCharacteristic = gattService.getCharacteristic(characteristic)
         if (gattCharacteristic == null) {
-            Timber.e("addIndication: Characteristic not available - %s", characteristic.toString())
+            Timber.e("indicateFrom: Characteristic not available - %s", characteristic.toString())
             return false
         }
 
@@ -349,7 +349,7 @@ class BlueteethDevice private constructor() {
                     Timber.e("onServicesDiscovered - Failed with status: " + status)
                     response = BlueteethResponse.ERROR
                 }
-                mServicesDiscoveredListener!!.call(response)
+                mServicesDiscoveredListener?.call(response)
                 mServicesDiscoveredListener = null
             }
         }
@@ -370,7 +370,7 @@ class BlueteethDevice private constructor() {
                     response = BlueteethResponse.ERROR
                 }
 
-                mCharacteristicReadListener!!.call(response, readData)
+                mCharacteristicReadListener?.call(response, readData)
                 mCharacteristicReadListener = null
             }
         }
@@ -389,7 +389,7 @@ class BlueteethDevice private constructor() {
                     response = BlueteethResponse.ERROR
                 }
 
-                mCharacteristicWriteListener!!.call(response)
+                mCharacteristicWriteListener?.call(response)
                 mCharacteristicWriteListener = null
             }
         }
@@ -397,7 +397,6 @@ class BlueteethDevice private constructor() {
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             super.onCharacteristicChanged(gatt, characteristic)
             Timber.d("OnCharacteristicChanged - gatt: %s, characteristic: %s ", gatt.toString(), characteristic.toString())
-
             mNotificationMap[characteristic.uuid.toString()]?.call(BlueteethResponse.NO_ERROR, characteristic.value)
         }
     }
