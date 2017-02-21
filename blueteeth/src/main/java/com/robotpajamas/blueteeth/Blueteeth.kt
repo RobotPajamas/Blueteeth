@@ -13,6 +13,7 @@ import java.util.ArrayList
 import timber.log.Timber
 
 // TODO: Fix support for pre-Lollipop vs post
+// TODO: Make this less depedendent on the Context?
 class Blueteeth private constructor() {
     init {
         println("($this) is in initialization")
@@ -42,7 +43,6 @@ class Blueteeth private constructor() {
 
     /***
      * Returns a list of the stored peripherals
-
      * @return List of all the scanned for devices
      */
     val peripherals: List<BlueteethDevice>
@@ -50,7 +50,6 @@ class Blueteeth private constructor() {
 
     /***
      * Returns a BlueteethDevice directly from a non-null macAddress
-
      * @return List of all the scanned for devices
      */
     @Throws(IllegalArgumentException::class)
@@ -59,7 +58,7 @@ class Blueteeth private constructor() {
             // TODO: Relax the constraint on this as a nullable or error?
             throw IllegalArgumentException("MacAddress is null or ill-formed")
         }
-        return BlueteethDevice(mContext, mBLEAdapter!!.getRemoteDevice(macAddress))
+        return BlueteethDevice(mContext!!, mBLEAdapter!!.getRemoteDevice(macAddress))
     }
 
     private var mOnScanCompletedListener: OnScanCompletedListener? = null
@@ -117,9 +116,7 @@ class Blueteeth private constructor() {
      * Scan will be stopped after input timeout.
 
      * @param scanTimeoutMillis        timeout in milliseconds after which scan will be stopped
-     * *
      * @param deviceDiscoveredListener callback will be called after each new device discovery
-     * *
      * @param scanCompletedListener    callback will be called after scanTimeoutMillis,
      * *                                 filled with nearby peripherals
      */
@@ -136,7 +133,6 @@ class Blueteeth private constructor() {
      * Scan will be stopped after input timeout.
 
      * @param scanTimeoutMillis     timeout in milliseconds after which scan will be stoped
-     * *
      * @param scanCompletedListener callback will be called after scanTimeoutMillis,
      * *                              filled with nearby peripherals
      */
@@ -180,7 +176,7 @@ class Blueteeth private constructor() {
     }
 
     private val mBLEScanCallback = BluetoothAdapter.LeScanCallback { device, rssi, scanRecord ->
-        val blueteethDevice = BlueteethDevice(mContext, device, rssi, scanRecord)
+        val blueteethDevice = BlueteethDevice(mContext!!, device, rssi, scanRecord)
         mScannedPeripherals.add(blueteethDevice)
         mOnDeviceDiscoveredListener?.call(blueteethDevice)
     }
