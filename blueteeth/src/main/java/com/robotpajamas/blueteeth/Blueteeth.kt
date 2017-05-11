@@ -102,7 +102,7 @@ object Blueteeth {
 
         Timber.d("Initializing BLEAdapter")
         mBLEAdapter = bleManager.adapter
-        if (mBLEAdapter == null || !mBLEAdapter!!.isEnabled) {
+        if (mBLEAdapter == null) {
             Timber.e("Unable to obtain a BluetoothAdapter or Bluetooth is not enabled")
             // TODO: Relax the constraint on Bluetooth being enabled with a runtime error instead
             throw RuntimeException()

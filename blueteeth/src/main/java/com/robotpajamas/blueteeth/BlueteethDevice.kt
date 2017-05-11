@@ -186,7 +186,7 @@ class BlueteethDevice private constructor() {
         return true
     }
 
-    fun writeCharacteristic(data: ByteArray, characteristic: UUID, service: UUID, characteristicWriteListener: OnCharacteristicWriteListener?): Boolean {
+    fun writeCharacteristic(data: ByteArray, characteristic: UUID, service: UUID, characteristicWriteListener: OnCharacteristicWriteListener? = null): Boolean {
         Timber.d("writeCharacteristic: Attempting to write %s to %s", Arrays.toString(data), characteristic.toString())
 
         if (!isConnected || mBluetoothGatt == null) {
