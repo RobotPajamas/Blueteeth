@@ -22,6 +22,8 @@ import com.robotpajamas.blueteeth.listeners.OnConnectionChangedListener;
 import com.robotpajamas.blueteeth.listeners.OnServicesDiscoveredListener;
 
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -47,6 +49,9 @@ public class BlueteethDevice {
     private OnCharacteristicWriteListener mCharacteristicWriteListener;
     @Nullable
     private OnBondingChangedListener mBondingChangedListener;
+
+    private Timer mConnectTimer = null;
+    private Timer mServicesDiscoveredTimer = null;
 
     private final String mName;
 
@@ -157,9 +162,54 @@ public class BlueteethDevice {
         return true;
     }
 
+    /***
+     * This connect method supports timeouts for connection
+     *
+     * @param autoReconnect
+     * @param timeout
+     * @return
+     */
+    public boolean connect(boolean autoReconnect, int timeout) {
+        if (mIsConnected) {
+            Timber.d("connect: Already connected, returning - disregarding autoReconnect");
+            if (mConnectionChangedListener != null) {
+                mConnectionChangedListener.call(mIsConnected);
+            }
+            return false;
+        }
+
+        // Remove old timeout if existent
+        if (mConnectTimer != null) {
+            mConnectTimer.cancel();
+            mConnectTimer.purge();
+            mConnectTimer = null;
+        }
+
+        // Create timeout for connection, after which to fail
+        mConnectTimer = new Timer();
+        mConnectTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Timber.w("Connection timed out!");
+                mConnectionChangedListener.call(false);
+                mConnectionChangedListener = null;
+            }
+        }, timeout);
+
+        // TODO: Passing in a null context seems to work, but what are the consequences?
+        // TODO: Should I grab the application context from the BlueteethManager? Seems odd...
+        mHandler.post(() -> mBluetoothGatt = mBluetoothDevice.connectGatt(null, autoReconnect, mGattCallback));
+        return true;
+    }
+
     public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener) {
         mConnectionChangedListener = onConnectionChangedListener;
         return connect(autoReconnect);
+    }
+
+    public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, int timeout) {
+        mConnectionChangedListener = onConnectionChangedListener;
+        return connect(autoReconnect, timeout);
     }
 
     /***
@@ -173,6 +223,20 @@ public class BlueteethDevice {
     public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, OnBondingChangedListener onBondingChangedListener) {
         mBondingChangedListener = onBondingChangedListener;
         return connect(autoReconnect, onConnectionChangedListener);
+    }
+
+    /***
+     * This connect call is only useful if the user is interested in Pairing/Bonding
+     *
+     * @param autoReconnect
+     * @param onConnectionChangedListener
+     * @param onBondingChangedListener
+     * @param timeout
+     * @return
+     */
+    public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, OnBondingChangedListener onBondingChangedListener, int timeout) {
+        mBondingChangedListener = onBondingChangedListener;
+        return connect(autoReconnect, onConnectionChangedListener, timeout);
     }
 
     public boolean disconnect() {
@@ -285,6 +349,13 @@ public class BlueteethDevice {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
             Timber.d("onConnectionStateChange - gatt: %s, status: %s, newState: %s ", gatt.toString(), status, newState);
+
+            // Remove timeout if existent
+            if (mConnectTimer != null) {
+                mConnectTimer.cancel();
+                mConnectTimer.purge();
+                mConnectTimer = null;
+            }
 
             // Removed check for GATT_SUCCESS - do we care? I think the current state is all that matters...
 
