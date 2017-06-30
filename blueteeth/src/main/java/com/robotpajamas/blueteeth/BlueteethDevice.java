@@ -22,6 +22,8 @@ import com.robotpajamas.blueteeth.listeners.OnConnectionChangedListener;
 import com.robotpajamas.blueteeth.listeners.OnServicesDiscoveredListener;
 
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -47,6 +49,11 @@ public class BlueteethDevice {
     private OnCharacteristicWriteListener mCharacteristicWriteListener;
     @Nullable
     private OnBondingChangedListener mBondingChangedListener;
+
+    private Timer mConnectTimer = null;
+    private Timer mServicesDiscoveredTimer = null;
+    private Timer mReadTimer = null;
+    private Timer mWriteTimer = null;
 
     private final String mName;
 
@@ -157,9 +164,54 @@ public class BlueteethDevice {
         return true;
     }
 
+    /***
+     * This connect method supports timeouts for connection
+     *
+     * @param autoReconnect
+     * @param timeout
+     * @return
+     */
+    public boolean connect(boolean autoReconnect, int timeout) {
+        if (mIsConnected) {
+            Timber.d("connect: Already connected, returning - disregarding autoReconnect");
+            if (mConnectionChangedListener != null) {
+                mConnectionChangedListener.call(mIsConnected);
+            }
+            return false;
+        }
+
+        // Remove old timeout if existent
+        if (mConnectTimer != null) {
+            mConnectTimer.cancel();
+            mConnectTimer.purge();
+            mConnectTimer = null;
+        }
+
+        // Create timeout for connection, after which to fail
+        mConnectTimer = new Timer();
+        mConnectTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Timber.w("Connection timed out!");
+                mConnectionChangedListener.call(false);
+                mConnectionChangedListener = null;
+            }
+        }, timeout);
+
+        // TODO: Passing in a null context seems to work, but what are the consequences?
+        // TODO: Should I grab the application context from the BlueteethManager? Seems odd...
+        mHandler.post(() -> mBluetoothGatt = mBluetoothDevice.connectGatt(null, autoReconnect, mGattCallback));
+        return true;
+    }
+
     public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener) {
         mConnectionChangedListener = onConnectionChangedListener;
         return connect(autoReconnect);
+    }
+
+    public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, int timeout) {
+        mConnectionChangedListener = onConnectionChangedListener;
+        return connect(autoReconnect, timeout);
     }
 
     /***
@@ -173,6 +225,20 @@ public class BlueteethDevice {
     public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, OnBondingChangedListener onBondingChangedListener) {
         mBondingChangedListener = onBondingChangedListener;
         return connect(autoReconnect, onConnectionChangedListener);
+    }
+
+    /***
+     * This connect call is only useful if the user is interested in Pairing/Bonding
+     *
+     * @param autoReconnect
+     * @param onConnectionChangedListener
+     * @param onBondingChangedListener
+     * @param timeout
+     * @return
+     */
+    public boolean connect(boolean autoReconnect, OnConnectionChangedListener onConnectionChangedListener, OnBondingChangedListener onBondingChangedListener, int timeout) {
+        mBondingChangedListener = onBondingChangedListener;
+        return connect(autoReconnect, onConnectionChangedListener, timeout);
     }
 
     public boolean disconnect() {
@@ -207,6 +273,36 @@ public class BlueteethDevice {
         return true;
     }
 
+    public boolean discoverServices(OnServicesDiscoveredListener onServicesDiscoveredListener, int timeout) {
+        Timber.d("discoverServices: Attempting to discover services");
+        if (!mIsConnected || mBluetoothGatt == null) {
+            Timber.e("discoverServices: Device is not connected, or GATT is null");
+            return false;
+        }
+
+        // Remove old timeout if existent
+        if (mServicesDiscoveredTimer != null) {
+            mServicesDiscoveredTimer.cancel();
+            mServicesDiscoveredTimer.purge();
+            mServicesDiscoveredTimer = null;
+        }
+
+        // Create timeout for discovery, after which to fail
+        mServicesDiscoveredTimer = new Timer();
+        mServicesDiscoveredTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Timber.w("Service discovery timed out!");
+                mServicesDiscoveredListener.call(BlueteethResponse.ERROR);
+                mServicesDiscoveredListener = null;
+            }
+        }, timeout);
+
+        mServicesDiscoveredListener = onServicesDiscoveredListener;
+        mHandler.post(mBluetoothGatt::discoverServices);
+        return true;
+    }
+
     public boolean readCharacteristic(@NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicReadListener onCharacteristicReadListener) {
         Timber.d("readCharacteristic: Attempting to read %s", characteristic.toString());
 
@@ -232,6 +328,49 @@ public class BlueteethDevice {
         return true;
     }
 
+    public boolean readCharacteristic(@NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicReadListener onCharacteristicReadListener, int timeout) {
+        Timber.d("readCharacteristic: Attempting to read %s", characteristic.toString());
+
+        if (!mIsConnected || mBluetoothGatt == null) {
+            Timber.e("readCharacteristic: Device is not connected, or GATT is null");
+            return false;
+        }
+
+        mCharacteristicReadListener = onCharacteristicReadListener;
+        BluetoothGattService gattService = mBluetoothGatt.getService(service);
+        if (gattService == null) {
+            Timber.e("readCharacteristic: Service not available - %s", service.toString());
+            return false;
+        }
+
+        BluetoothGattCharacteristic gattCharacteristic = gattService.getCharacteristic(characteristic);
+        if (gattCharacteristic == null) {
+            Timber.e("readCharacteristic: Characteristic not available - %s", characteristic.toString());
+            return false;
+        }
+
+        // Remove old timeout if existent
+        if (mReadTimer != null) {
+            mReadTimer.cancel();
+            mReadTimer.purge();
+            mReadTimer = null;
+        }
+
+        // Create timeout for reading, after which to fail
+        mReadTimer = new Timer();
+        mReadTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Timber.w("Read timed out!");
+                mCharacteristicReadListener.call(BlueteethResponse.ERROR, new byte[]{});
+                mCharacteristicReadListener = null;
+            }
+        }, timeout);
+
+        mHandler.post(() -> mBluetoothGatt.readCharacteristic(gattCharacteristic));
+        return true;
+    }
+
     public boolean writeCharacteristic(@NonNull byte[] data, @NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicWriteListener onCharacteristicWriteListener) {
         Timber.d("writeCharacteristic: Attempting to write %s to %s", Arrays.toString(data), characteristic.toString());
 
@@ -252,6 +391,50 @@ public class BlueteethDevice {
             Timber.e("writeCharacteristic: Characteristic not available - %s", characteristic.toString());
             return false;
         }
+
+        gattCharacteristic.setValue(data);
+        mHandler.post(() -> mBluetoothGatt.writeCharacteristic(gattCharacteristic));
+        return true;
+    }
+
+    public boolean writeCharacteristic(@NonNull byte[] data, @NonNull UUID characteristic, @NonNull UUID service, OnCharacteristicWriteListener onCharacteristicWriteListener, int timeout) {
+        Timber.d("writeCharacteristic: Attempting to write %s to %s", Arrays.toString(data), characteristic.toString());
+
+        if (!mIsConnected || mBluetoothGatt == null) {
+            Timber.e("writeCharacteristic: Device is not connected, or GATT is null");
+            return false;
+        }
+
+        mCharacteristicWriteListener = onCharacteristicWriteListener;
+        BluetoothGattService gattService = mBluetoothGatt.getService(service);
+        if (gattService == null) {
+            Timber.e("writeCharacteristic: Service not available - %s", service.toString());
+            return false;
+        }
+
+        BluetoothGattCharacteristic gattCharacteristic = gattService.getCharacteristic(characteristic);
+        if (gattCharacteristic == null) {
+            Timber.e("writeCharacteristic: Characteristic not available - %s", characteristic.toString());
+            return false;
+        }
+
+        // Remove old timeout if existent
+        if (mWriteTimer != null) {
+            mWriteTimer.cancel();
+            mWriteTimer.purge();
+            mWriteTimer = null;
+        }
+
+        // Create timeout for writing, after which to fail
+        mWriteTimer = new Timer();
+        mWriteTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Timber.w("Write timed out!");
+                mCharacteristicWriteListener.call(BlueteethResponse.ERROR);
+                mCharacteristicReadListener = null;
+            }
+        }, timeout);
 
         gattCharacteristic.setValue(data);
         mHandler.post(() -> mBluetoothGatt.writeCharacteristic(gattCharacteristic));
@@ -285,6 +468,13 @@ public class BlueteethDevice {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
             Timber.d("onConnectionStateChange - gatt: %s, status: %s, newState: %s ", gatt.toString(), status, newState);
+
+            // Remove timeout if existent
+            if (mConnectTimer != null) {
+                mConnectTimer.cancel();
+                mConnectTimer.purge();
+                mConnectTimer = null;
+            }
 
             // Removed check for GATT_SUCCESS - do we care? I think the current state is all that matters...
 
@@ -334,6 +524,13 @@ public class BlueteethDevice {
             super.onServicesDiscovered(gatt, status);
             Timber.d("onServicesDiscovered - gatt: %s, status: %s", gatt.toString(), status);
 
+            // Remove timeout if existent
+            if (mServicesDiscoveredTimer != null) {
+                mServicesDiscoveredTimer.cancel();
+                mServicesDiscoveredTimer.purge();
+                mServicesDiscoveredTimer = null;
+            }
+
             if (mServicesDiscoveredListener != null) {
                 BlueteethResponse response = BlueteethResponse.NO_ERROR;
                 if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -351,6 +548,13 @@ public class BlueteethDevice {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
             Timber.d("onCharacteristicRead - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
+
+            // Remove timeout if existent
+            if (mReadTimer != null) {
+                mReadTimer.cancel();
+                mReadTimer.purge();
+                mReadTimer = null;
+            }
 
             if (mCharacteristicReadListener != null) {
                 BlueteethResponse response = BlueteethResponse.NO_ERROR;
@@ -373,6 +577,13 @@ public class BlueteethDevice {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
             Timber.d("onCharacteristicWrite - gatt: %s, status: %s, characteristic: %s ", gatt.toString(), status, characteristic.toString());
+
+            // Remove timeout if existent
+            if (mWriteTimer != null) {
+                mWriteTimer.cancel();
+                mWriteTimer.purge();
+                mWriteTimer = null;
+            }
 
             if (mCharacteristicWriteListener != null) {
                 BlueteethResponse response = BlueteethResponse.NO_ERROR;
