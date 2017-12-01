@@ -1,5 +1,6 @@
 package com.robotpajamas.blueteeth
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -15,6 +16,8 @@ import timber.log.Timber
 // TODO: Fix support for pre-Lollipop vs post
 // TODO: Make this less depedendent on the Context?
 
+// TODO:Remove context
+@SuppressLint("StaticFieldLeak")
 object Blueteeth {
 //class Blueteeth private constructor() {
     init {
