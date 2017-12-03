@@ -1,13 +1,9 @@
 package com.robotpajamas.android.blueteeth.peripherals;
 
 import com.robotpajamas.blueteeth.BlueteethDevice;
-import com.robotpajamas.blueteeth.BlueteethUtils;
-import com.robotpajamas.blueteeth.listeners.OnBondingChangedListener;
 import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener;
 import com.robotpajamas.blueteeth.listeners.OnCharacteristicWriteListener;
-import com.robotpajamas.blueteeth.listeners.OnConnectionChangedListener;
 
-import java.lang.reflect.Array;
 import java.util.UUID;
 
 public class SamplePeripheral extends BaseBluetoothPeripheral {
@@ -31,28 +27,28 @@ public class SamplePeripheral extends BaseBluetoothPeripheral {
 
     public void writeCounter(byte value, OnCharacteristicWriteListener writeListener) {
         byte[] data = new byte[]{value};
-        BlueteethUtils.writeData(data, CHARACTERISTIC_WRITE, SERVICE_TEST, mPeripheral, writeListener);
+//        BlueteethUtils.writeData(data, CHARACTERISTIC_WRITE, SERVICE_TEST, mPeripheral, writeListener);
     }
 
     public void writeNoResponseCounter(byte value) {
         byte[] data = new byte[]{value};
-        BlueteethUtils.writeData(data, CHARACTERISTIC_WRITE_NO_RESPONSE, SERVICE_TEST, mPeripheral, null);
+//        BlueteethUtils.writeData(data, CHARACTERISTIC_WRITE_NO_RESPONSE, SERVICE_TEST, mPeripheral, null);
     }
 
     public void readCounter(OnCharacteristicReadListener readListener) {
-        BlueteethUtils.read(CHARACTERISTIC_READ, SERVICE_TEST, mPeripheral, readListener);
+//        BlueteethUtils.read(CHARACTERISTIC_READ, SERVICE_TEST, mPeripheral, readListener);
     }
 
     public void toggleNotification(boolean isEnabled, OnCharacteristicReadListener readListener) {
         if (isEnabled) {
-            mPeripheral.addNotification(CHARACTERISTIC_NOTIFY, SERVICE_TEST, readListener);
+//            mPeripheral.addNotification(CHARACTERISTIC_NOTIFY, SERVICE_TEST, readListener);
         } else {
 //            mPeripheral.removeNotifications(CHARACTERISTIC_NOTIFY, SERVICE_TEST);
         }
     }
 
     public void writeEcho(byte[] dataToWrite, OnCharacteristicWriteListener writeListener) {
-        BlueteethUtils.writeData(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, mPeripheral, writeListener);
+//        BlueteethUtils.writeData(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, mPeripheral, writeListener);
         mPeripheral.writeCharacteristic(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, writeListener);
     }
 
@@ -61,7 +57,7 @@ public class SamplePeripheral extends BaseBluetoothPeripheral {
 //    }
 
     public void readEcho(OnCharacteristicReadListener readListener) {
-        BlueteethUtils.read(CHARACTERISTIC_READ_ECHO, SERVICE_TEST, mPeripheral, readListener);
+//        BlueteethUtils.read(CHARACTERISTIC_READ_ECHO, SERVICE_TEST, mPeripheral, readListener);
     }
 
 //    public void notifyEcho()

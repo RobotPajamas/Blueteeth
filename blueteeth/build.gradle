@@ -30,11 +30,11 @@ ext {
     allLicenses = ["Apache-2.0"]
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
+//buildscript {
+//    repositories {
+//        mavenCentral()
+//    }
+//}
 
 android {
     compileSdkVersion 27
@@ -52,13 +52,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-//    compileOptions {
-//        sourceCompatibility JavaVersion.VERSION_1_8
-//        targetCompatibility JavaVersion.VERSION_1_8
-//    }
-//    sourceSets {
-//        main.java.srcDirs += 'src/main/kotlin'
-//    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
 }
 
 dependencies {
@@ -75,6 +72,3 @@ dependencies {
 //apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/bintrayv1.gradle'
 // apply from: '../jcenter/installv1.gradle'
 // apply from: '../jcenter/bintrayv1.gradle'
-repositories {
-    mavenCentral()
-}

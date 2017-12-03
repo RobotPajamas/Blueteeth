@@ -12,7 +12,7 @@ import com.robotpajamas.blueteeth.BlueteethDevice;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class DeviceScanListAdapter extends BaseAdapter {
@@ -81,10 +81,10 @@ public class DeviceScanListAdapter extends BaseAdapter {
 
     public static class DeviceHolder {
 
-        @Bind(R.id.textview_device_name)
+        @BindView(R.id.textview_device_name)
         TextView deviceName;
 
-        @Bind(R.id.textview_device_mac)
+        @BindView(R.id.textview_device_mac)
         TextView deviceMac;
 
         public DeviceHolder(View view) {

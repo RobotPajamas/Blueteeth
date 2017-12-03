@@ -11,10 +11,10 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.robotpajamas.blueteeth.Blueteeth;
 import com.robotpajamas.blueteeth.BlueteethDevice;
-import com.robotpajamas.blueteeth.BlueteethManager;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
@@ -22,7 +22,7 @@ public class MainActivity extends ListActivity {
     private static final int REQ_BLUETOOTH_ENABLE = 1000;
     private static final int DEVICE_SCAN_MILLISECONDS = 10000;
 
-    @Bind(R.id.swiperefresh)
+    @BindView(R.id.swiperefresh)
     SwipeRefreshLayout mSwipeRefresh;
     private DeviceScanListAdapter mDeviceAdapter;
 
@@ -37,6 +37,7 @@ public class MainActivity extends ListActivity {
 
         // If BLE support isn't there, quit the app
         checkBluetoothSupport();
+        Blueteeth.INSTANCE.init(getApplicationContext());
 
         mSwipeRefresh.setOnRefreshListener(this::startScanning);
         mDeviceAdapter = new DeviceScanListAdapter(this);
@@ -75,7 +76,7 @@ public class MainActivity extends ListActivity {
         // Clear existing devices (assumes none are connected)
         Timber.d("Start scanning");
         mDeviceAdapter.clear();
-        BlueteethManager.with(this).scanForPeripherals(DEVICE_SCAN_MILLISECONDS, bleDevices -> {
+        Blueteeth.INSTANCE.scanForPeripherals(DEVICE_SCAN_MILLISECONDS, bleDevices -> {
             Timber.d("On Scan completed");
             mSwipeRefresh.setRefreshing(false);
             for (BlueteethDevice device : bleDevices) {
@@ -90,7 +91,7 @@ public class MainActivity extends ListActivity {
     private void stopScanning() {
         // Update the button, and shut off the progress bar
         mSwipeRefresh.setRefreshing(false);
-        BlueteethManager.with(this).stopScanForPeripherals();
+        Blueteeth.INSTANCE.stopScanForPeripherals();
     }
 
     private void checkBluetoothSupport() {
