@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 
 // Manifest version information
 def versionMajor = 0
-def versionMinor = 2
+def versionMinor = 3
 def versionPatch = 0
 
 ext {
@@ -19,7 +19,7 @@ ext {
     siteUrl = 'https://github.com/RobotPajamas/Blueteeth'
     gitUrl = 'https://github.com/RobotPajamas/Blueteeth.git'
 
-    libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}"
+    libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}-KOTSHOT"
 
     developerId = 'sureshjoshi'
     developerName = 'Suresh Joshi'
@@ -67,8 +67,8 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
-// Raw Github returning a 500 error for the install file - made local
-//apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/installv1.gradle'
-//apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/bintrayv1.gradle'
+apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/bintrayv1.gradle'
+// If there are issues from Github, then use the local files
 // apply from: '../jcenter/installv1.gradle'
 // apply from: '../jcenter/bintrayv1.gradle'
