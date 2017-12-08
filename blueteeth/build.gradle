@@ -1,8 +1,9 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 // Manifest version information
 def versionMajor = 0
-def versionMinor = 2
+def versionMinor = 3
 def versionPatch = 0
 
 ext {
@@ -18,7 +19,7 @@ ext {
     siteUrl = 'https://github.com/RobotPajamas/Blueteeth'
     gitUrl = 'https://github.com/RobotPajamas/Blueteeth.git'
 
-    libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}"
+    libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}-KOTSHOT"
 
     developerId = 'sureshjoshi'
     developerName = 'Suresh Joshi'
@@ -29,25 +30,13 @@ ext {
     allLicenses = ["Apache-2.0"]
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
-    }
-}
-
-apply plugin: 'me.tatarka.retrolambda'
-
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 27
+    buildToolsVersion '27.0.1'
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 23
+        targetSdkVersion 22
         versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
     }
@@ -57,24 +46,26 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:support-annotations:23.3.0'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:support-annotations:27.0.2'
     // TODO: Remove this dependency - Create LogLevel API + Standard logging
-    compile 'com.jakewharton.timber:timber:3.1.0'
-
-    retrolambdaConfig 'net.orfjackal.retrolambda:retrolambda:2.3.0'
+    implementation 'com.jakewharton.timber:timber:4.5.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
-// Raw Github returning a 500 error for the install file - made local
-//apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/installv1.gradle'
-//apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/bintrayv1.gradle'
-apply from: '../jcenter/installv1.gradle'
-apply from: '../jcenter/bintrayv1.gradle'
+apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/bintrayv1.gradle'
+// If there are issues from Github, then use the local files
+// apply from: '../jcenter/installv1.gradle'
+// apply from: '../jcenter/bintrayv1.gradle'
+
+tasks.withType(Javadoc) {
+    enabled = false
+}

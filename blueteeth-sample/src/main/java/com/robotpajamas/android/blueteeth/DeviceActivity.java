@@ -7,13 +7,12 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.robotpajamas.android.blueteeth.peripherals.SamplePeripheral;
-import com.robotpajamas.blueteeth.BlueteethManager;
+import com.robotpajamas.blueteeth.Blueteeth;
 import com.robotpajamas.blueteeth.BlueteethResponse;
-import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener;
 
 import java.util.Arrays;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -22,28 +21,28 @@ public class DeviceActivity extends Activity {
     private SamplePeripheral mSamplePeripheral;
     private boolean mIsConnected;
 
-    @Bind(R.id.scrollview)
+    @BindView(R.id.scrollview)
     ScrollView mScrollView;
 
-    @Bind(R.id.textview_console)
+    @BindView(R.id.textview_console)
     TextView mConsoleTextView;
 
-    @Bind(R.id.button_connect)
+    @BindView(R.id.button_connect)
     Button mConnectionButton;
 
-    @Bind(R.id.button_write)
+    @BindView(R.id.button_write)
     Button mWriteButton;
 
-    @Bind(R.id.button_write_no_response)
+    @BindView(R.id.button_write_no_response)
     Button mWriteNoResponseButton;
 
-    @Bind(R.id.button_read_counter)
+    @BindView(R.id.button_read_counter)
     Button mReadCounterButton;
 
-    @Bind(R.id.button_toggle_notify)
+    @BindView(R.id.button_toggle_notify)
     Button mToggleNotifyButton;
 
-    @Bind(R.id.button_toggle_indicate)
+    @BindView(R.id.button_toggle_indicate)
     Button mToggleIndicateButton;
 
     @OnClick(R.id.button_clear)
@@ -104,6 +103,7 @@ public class DeviceActivity extends Activity {
     }
 
     private boolean mNotifyEnabled = false;
+
     @OnClick(R.id.button_toggle_notify)
     void toggleNotify() {
         mNotifyEnabled = !mNotifyEnabled;
@@ -142,7 +142,7 @@ public class DeviceActivity extends Activity {
         ButterKnife.bind(this);
 
         String macAddress = getIntent().getStringExtra(getString(R.string.extra_mac_address));
-        mSamplePeripheral = new SamplePeripheral(BlueteethManager.with(this).getPeripheral(macAddress));
+        mSamplePeripheral = new SamplePeripheral(Blueteeth.INSTANCE.getPeripheral(macAddress));
     }
 
     @Override
