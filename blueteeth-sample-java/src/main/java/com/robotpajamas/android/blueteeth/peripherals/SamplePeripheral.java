@@ -3,6 +3,7 @@ package com.robotpajamas.android.blueteeth.peripherals;
 import com.robotpajamas.blueteeth.BlueteethDevice;
 import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener;
 import com.robotpajamas.blueteeth.listeners.OnCharacteristicWriteListener;
+import com.robotpajamas.blueteeth.models.Result;
 
 import java.util.UUID;
 
@@ -49,6 +50,9 @@ public class SamplePeripheral extends BaseBluetoothPeripheral {
 
     public void writeEcho(byte[] dataToWrite, OnCharacteristicWriteListener writeListener) {
 //        BlueteethUtils.writeData(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, mPeripheral, writeListener);
+        mPeripheral.read("", "", new kotlin.jvm.functions.Function1<Result<byte[]>, Unit>() {
+        return Unit.INSTANCE;
+        });
         mPeripheral.writeCharacteristic(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, writeListener);
     }
 
