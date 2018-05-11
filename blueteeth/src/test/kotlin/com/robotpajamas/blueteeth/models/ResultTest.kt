@@ -78,6 +78,39 @@ class ResultTest {
     }
 
     @Test
+    fun successCallback_whenSuccessCreated_shouldBeCalled() {
+        val expected = 42
+        val result = Result.Success(expected)
+        var value = 0
+        result.success {
+            value = it
+        }
+        assertEquals(value, expected)
+    }
+
+    @Test
+    fun successCallback_whenFailureCreated_shouldNotBeCalled() {
+        val result = Result.Failure(NullPointerException())
+        result.success { fail() }
+    }
+
+    @Test
+    fun failureCallback_whenSuccessCreated_shouldNotBeCalled() {
+        val result = Result.Success(42)
+        result.failure { fail() }
+    }
+
+    @Test
+    fun failureCallback_whenFailureCreated_shouldBeCalled() {
+        val result = Result.Failure(NullPointerException())
+        var failureCalled = false
+        result.failure {
+            failureCalled = true
+        }
+        assertTrue(failureCalled)
+    }
+
+    @Test
     fun unwrap_whenSuccessCreated_shouldReturnTrue() {
         val result = Result.Success(0)
         assertEquals(result.unwrap(), 0)
