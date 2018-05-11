@@ -1,1 +1,1 @@
-include ':blueteeth-sample-java', ':blueteeth'
+include ':blueteeth', ':blueteeth-sample', ':blueteeth-sample-java'
