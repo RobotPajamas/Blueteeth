@@ -49,6 +49,7 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin/'
     }
 }
 
@@ -58,6 +59,7 @@ dependencies {
     // TODO: Remove this dependency - Create LogLevel API + Standard logging
     implementation 'com.jakewharton.timber:timber:4.5.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation 'junit:junit:4.12'
 }
 
 apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/installv1.gradle'
