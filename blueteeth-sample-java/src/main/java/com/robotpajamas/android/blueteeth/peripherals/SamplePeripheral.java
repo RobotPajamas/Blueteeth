@@ -50,9 +50,6 @@ public class SamplePeripheral extends BaseBluetoothPeripheral {
 
     public void writeEcho(byte[] dataToWrite, OnCharacteristicWriteListener writeListener) {
 //        BlueteethUtils.writeData(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, mPeripheral, writeListener);
-        mPeripheral.read("", "", new kotlin.jvm.functions.Function1<Result<byte[]>, Unit>() {
-        return Unit.INSTANCE;
-        });
         mPeripheral.writeCharacteristic(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, writeListener);
     }
 
