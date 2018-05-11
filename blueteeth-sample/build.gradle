@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 
 def versionMajor = 0
 def versionMinor = 0
@@ -23,14 +24,20 @@ android {
         }
     }
 
+    dataBinding {
+        enabled = true
+    }
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
-        test.java.srcDirs += 'src/test/kotlin/'
+        test.java.srcDirs += 'src/test/kotlin'
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    kapt "com.android.databinding:compiler:$android_tools"
+
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.5.1'

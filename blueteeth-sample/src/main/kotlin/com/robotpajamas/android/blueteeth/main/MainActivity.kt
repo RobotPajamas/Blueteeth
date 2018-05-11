@@ -1,53 +1,46 @@
-package com.robotpajamas.android.blueteeth
+package com.robotpajamas.android.blueteeth.main
 
 import android.app.ListActivity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.widget.SwipeRefreshLayout
-import android.text.TextUtils
 import android.view.View
 import android.widget.ListView
 import android.widget.Toast
-
+import com.robotpajamas.android.blueteeth.DeviceScanListAdapter
+import com.robotpajamas.android.blueteeth.R
+import com.robotpajamas.android.blueteeth.databinding.ActivityMainBinding
 import com.robotpajamas.blueteeth.Blueteeth
-import com.robotpajamas.blueteeth.BlueteethDevice
-
-//import butterknife.BindView;
-//import butterknife.ButterKnife;
 import timber.log.Timber
 
 class MainActivity : ListActivity() {
 
-    //    @BindView(R.id.swiperefresh)
-    internal var mSwipeRefresh: SwipeRefreshLayout? = null
-    private var mDeviceAdapter: DeviceScanListAdapter? = null
+    lateinit var binding: ActivityMainBinding
+    private val vm by lazy { MainViewModel() }
+    private val deviceAdapter by lazy { DeviceScanListAdapter(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding.vm = vm
 
-        setContentView(R.layout.activity_main)
-        //        ButterKnife.bind(this);
-
-        Timber.plant(Timber.DebugTree())
-
+        // TODO: Put this in MainApplication?
         // If BLE support isn't there, quit the app
         checkBluetoothSupport()
         Blueteeth.init(applicationContext)
 
-        //        mSwipeRefresh.setOnRefreshListener(this::startScanning);
-        mDeviceAdapter = DeviceScanListAdapter(this)
-        listAdapter = mDeviceAdapter
+        binding.swiperefresh.setOnRefreshListener { startScanning() }
+        listAdapter = deviceAdapter
     }
 
     override fun onResume() {
         super.onResume()
-
-        mDeviceAdapter!!.clear()
+        deviceAdapter.clear()
 
         // Start automatic scan
-        mSwipeRefresh!!.isRefreshing = true
+        binding.swiperefresh.isRefreshing = true
         startScanning()
     }
 
@@ -60,16 +53,16 @@ class MainActivity : ListActivity() {
         super.onListItemClick(listView, view, position, id)
         stopScanning()
 
-        val blueteethDevice = mDeviceAdapter!!.getItem(position)
-        val intent = Intent(this, DeviceActivity::class)
-        intent.putExtra(getString(R.string.extra_mac_address), blueteethDevice.macAddress)
-        startActivity(intent)
+        val blueteethDevice = deviceAdapter.getItem(position)
+//        val intent = Intent(this, DeviceActivity::class)
+//        intent.putExtra(getString(R.string.extra_mac_address), blueteethDevice.macAddress)
+//        startActivity(intent)
     }
 
     private fun startScanning() {
         // Clear existing devices (assumes none are connected)
         Timber.d("Start scanning")
-        mDeviceAdapter!!.clear()
+        deviceAdapter.clear()
         //        Blueteeth.INSTANCE.scanForPeripherals(DEVICE_SCAN_MILLISECONDS, bleDevices -> {
         //            Timber.d("On Scan completed");
         //            mSwipeRefresh.setRefreshing(false);
@@ -84,7 +77,7 @@ class MainActivity : ListActivity() {
 
     private fun stopScanning() {
         // Update the button, and shut off the progress bar
-        mSwipeRefresh!!.isRefreshing = false
+        binding.swiperefresh.isRefreshing = false
         Blueteeth.stopScanForPeripherals()
     }
 

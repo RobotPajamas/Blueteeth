@@ -51,7 +51,7 @@ class DeviceScanListAdapter(context: Context) : BaseAdapter() {
         //        holder.deviceName.setText(device.getName());
         //        holder.deviceMac.setText(device.getMacAddress());
 
-        return convertView
+        return convertView!!
     }
 
     fun add(device: BlueteethDevice) {

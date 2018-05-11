@@ -1,23 +1,32 @@
 package com.robotpajamas.android.blueteeth
 
+//import com.robotpajamas.android.blueteeth.peripherals.SamplePeripheral;
+
 import android.app.Activity
+import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ScrollView
 import android.widget.TextView
-
-//import com.robotpajamas.android.blueteeth.peripherals.SamplePeripheral;
-import com.robotpajamas.blueteeth.Blueteeth
+import com.robotpajamas.android.blueteeth.databinding.ActivityDeviceBinding
 import com.robotpajamas.blueteeth.BlueteethDevice
-import com.robotpajamas.blueteeth.BlueteethResponse
-
-import java.util.Arrays
-
-//import butterknife.BindView;
-//import butterknife.ButterKnife;
-//import butterknife.OnClick;
 
 class DeviceActivity : Activity() {
+
+    lateinit var binding: ActivityDeviceBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_device)
+
+        val macAddress = intent.getStringExtra(getString(R.string.extra_mac_address))
+        //        mSamplePeripheral = new SamplePeripheral(Blueteeth.INSTANCE.getPeripheral(macAddress));
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mSamplePeripheral?.close()
+    }
 
     private val mSamplePeripheral: BlueteethDevice? = null
     private val mIsConnected: Boolean = false
@@ -133,19 +142,6 @@ class DeviceActivity : Activity() {
         //        mSamplePeripheral.writeNoResponseCounter((byte) 42);
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_device)
-        //        ButterKnife.bind(this);
-
-        val macAddress = intent.getStringExtra(getString(R.string.extra_mac_address))
-        //        mSamplePeripheral = new SamplePeripheral(Blueteeth.INSTANCE.getPeripheral(macAddress));
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mSamplePeripheral?.close()
-    }
 
     private fun updateReceivedData(message: String) {
         //        runOnUiThread(() -> {
