@@ -5,6 +5,7 @@ import android.databinding.Bindable
 import com.robotpajamas.blueteeth.Blueteeth
 import com.robotpajamas.blueteeth.BlueteethDevice
 import com.robotpajamas.blueteeth.listeners.OnScanCompletedListener
+import com.robotpajamas.android.blueteeth.BR
 
 class DeviceScanViewModel(private val navigator: Navigator) : BaseObservable() {
 
@@ -16,6 +17,10 @@ class DeviceScanViewModel(private val navigator: Navigator) : BaseObservable() {
 
     @Bindable
     var devices: List<BlueteethDevice> = emptyList()
+        private set(value) {
+            field = value
+            notifyPropertyChanged(BR.devices)
+        }
 
     fun startScan() {
         Blueteeth.scanForPeripherals(DEVICE_SCAN_MILLISECONDS, OnScanCompletedListener { bleDevices ->

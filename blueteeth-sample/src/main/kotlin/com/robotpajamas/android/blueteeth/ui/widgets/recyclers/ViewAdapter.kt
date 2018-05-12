@@ -14,8 +14,8 @@ abstract class ViewAdapter : RecyclerView.Adapter<ViewHolder>() {
         holder.bind(getObj(position))
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder {
-        val layoutInflater = LayoutInflater.from(parent?.context)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
         val binding: ViewDataBinding = DataBindingUtil.inflate(layoutInflater, viewType, parent, false)
         return ViewHolder(binding)
     }
