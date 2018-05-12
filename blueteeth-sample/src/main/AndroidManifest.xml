@@ -16,7 +16,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".DeviceActivity" />
+        <activity android:name=".ui.device.DeviceActivity" />
     </application>
 
 </manifest>

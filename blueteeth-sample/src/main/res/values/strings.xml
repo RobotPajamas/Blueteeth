@@ -2,12 +2,10 @@
     <string name="app_name">Blueteeth Sample</string>
     <string name="connect">Connect</string>
     <string name="read">Read</string>
-    <string name="reset_counter">Reset Counter</string>
-    <string name="reset_counter_no_response">Reset No Response</string>
+    <string name="write">Write</string>
     <string name="clear">Clear</string>
     <string name="disconnect">Disconnect</string>
-    <string name="notify">Toggle Notify</string>
-    <string name="indicate">Toggle Indicate</string>
+    <string name="subscribe">Subscribe</string>
     <string name="swipe_to_start">Swipe to start scanning</string>
 
     <string name="extra_mac_address" translatable="false">com.robotpajamas.android.blueteeth.mac_address</string>

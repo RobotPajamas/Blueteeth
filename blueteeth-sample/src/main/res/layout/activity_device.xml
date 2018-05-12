@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="vm"
+            type="com.robotpajamas.android.blueteeth.ui.device.DeviceViewModel" />
+    </data>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -16,47 +25,27 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:enabled="false"
-                android:text="@string/reset_counter" />
+                android:enabled="@{vm.connected}"
+                android:onClick="@{() -> vm.write()}"
+                android:text="@string/write" />
 
             <Button
-                android:id="@+id/button_write_no_response"
+                android:id="@+id/button_read"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:enabled="false"
-                android:text="@string/reset_counter_no_response" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/button_read_counter"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:enabled="false"
+                android:enabled="@{vm.connected}"
+                android:onClick="@{() -> vm.read()}"
                 android:text="@string/read" />
 
             <Button
-                android:id="@+id/button_toggle_notify"
+                android:id="@+id/button_subscribe"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:enabled="false"
-                android:text="@string/notify" />
-
-            <Button
-                android:id="@+id/button_toggle_indicate"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:enabled="false"
-                android:text="@string/indicate" />
+                android:enabled="@{vm.connected}"
+                android:onClick="@{() -> vm.subscribe()}"
+                android:text="@string/subscribe" />
 
         </LinearLayout>
 
@@ -70,6 +59,7 @@
                 android:id="@+id/textview_console"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="@{vm.text}"
                 android:textIsSelectable="true"
                 android:typeface="monospace" />
         </ScrollView>
@@ -83,13 +73,29 @@
                 android:id="@+id/button_clear"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:onClick="@{() -> vm.clear()}"
                 android:text="@string/clear" />
 
-            <Button
-                android:id="@+id/button_connect"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/connect" />
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:id="@+id/button_connect"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{() -> vm.connect()}"
+                    android:text="@string/connect"
+                    android:visibility="@{vm.connected ? View.VISIBLE : View.GONE}" />
+
+                <Button
+                    android:id="@+id/button_disconnect"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{() -> vm.disconnect()}"
+                    android:text="@string/disconnect"
+                    android:visibility="@{vm.connected ? View.GONE : View.VISIBLE}" />
+            </FrameLayout>
 
         </LinearLayout>
 
