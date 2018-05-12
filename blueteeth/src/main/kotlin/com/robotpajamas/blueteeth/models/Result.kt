@@ -11,35 +11,31 @@ sealed class Result<Value> {
     class Failure(override val error: Exception) : Result<Nothing>() {
         override val value: Nothing? = null
     }
-}
 
-inline val Result<*>.isSuccess: Boolean
-    get() {
-        return when (this) {
+    val isSuccess: Boolean
+        get() = when (this) {
             is Result.Success -> true
             else -> false
         }
+
+    val isFailure: Boolean
+        get() = !isSuccess
+
+    fun success(call: (Value) -> Unit) {
+        if (this is Result.Success) {
+            call(value)
+        }
     }
 
-inline val Result<*>.isFailure: Boolean
-    get() = !isSuccess
+    fun failure(call: (Exception) -> Unit) {
+        if (this is Result.Failure) {
+            call(error)
+        }
+    }
 
-@Throws(Exception::class)
-fun <Value> Result<Value>.unwrap(): Value {
-    when (this) {
-        is Result.Success -> return value
+    @Throws(Exception::class)
+    fun unwrap(): Value = when (this) {
+        is Result.Success -> value
         is Result.Failure -> throw error
-    }
-}
-
-fun <Value> Result<Value>.success(call: (Value) -> Unit) {
-    if (this is Result.Success) {
-        call(value)
-    }
-}
-
-fun <Value> Result<Value>.failure(call: (Exception) -> Unit) {
-    if (this is Result.Failure) {
-        call(error)
     }
 }
