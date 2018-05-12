@@ -8,11 +8,36 @@ import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import com.robotpajamas.blueteeth.listeners.*
+import com.robotpajamas.blueteeth.models.*
 import timber.log.Timber
 import java.util.*
 
+
 // TODO: Make this object threadsafe and async-safe (called twice in a row, should return a failure?)
-class BlueteethDevice private constructor() {
+class BlueteethDevice private constructor() : Device {
+    override fun connect(timeout: Int?, autoReconnect: Boolean, block: ConnectionHandler?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun disconnect(autoReconnect: Boolean) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun discoverServices(block: ServiceDiscovery?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun read(characteristic: UUID, service: UUID, block: ReadHandler) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun subscribeTo(characteristic: UUID, service: UUID, block: ReadHandler?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun write(data: ByteArray, characteristic: UUID, service: UUID, type: WriteType, block: WriteHandler?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     // TODO: The handler posts would be better if abstracted away - Does this need to be dependency injected for testing?
     private val mHandler = Handler(Looper.getMainLooper())
