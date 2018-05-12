@@ -4,7 +4,9 @@ import android.databinding.BaseObservable
 import android.databinding.Bindable
 import com.robotpajamas.android.blueteeth.BR
 import com.robotpajamas.blueteeth.BlueteethDevice
+import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener
 import com.robotpajamas.blueteeth.listeners.OnConnectionChangedListener
+import java.util.*
 
 class DeviceViewModel(private val navigator: Navigator) : BaseObservable() {
 
@@ -44,11 +46,26 @@ class DeviceViewModel(private val navigator: Navigator) : BaseObservable() {
     }
 
     fun read() {
+        device?.readCharacteristic(
+                UUID.fromString("2a24"),
+                UUID.fromString("180a"),
+                OnCharacteristicReadListener { response, data ->
+                    text += "Read response: $response, Read value: $data"
+                })
     }
 
-    fun write() {}
+    fun write() {
+        device?.writeCharacteristic(byteArrayOf(1, 2, 3), UUID.fromString("2a24"), UUID.fromString("180a"))
+    }
 
-    fun subscribe() {}
+    fun subscribe() {
+        device?.subscribeTo(
+                UUID.fromString("2a24"),
+                UUID.fromString("180a"),
+                OnCharacteristicReadListener { response, data ->
+                    text += "Subscription read response: $response, Read value: $data"
+                })
+    }
 
     fun clear() {
         text = ""
