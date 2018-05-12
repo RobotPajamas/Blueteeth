@@ -35,7 +35,7 @@ class BlueteethDevice private constructor() : Device {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun write(data: ByteArray, characteristic: UUID, service: UUID, type: WriteType, block: WriteHandler?) {
+    override fun write(data: ByteArray, characteristic: UUID, service: UUID, type: Writable.Type, block: WriteHandler?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
