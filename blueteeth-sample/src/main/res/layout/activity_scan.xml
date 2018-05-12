@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/tools">
 
     <data>
 
         <variable
             name="vm"
-            type="com.robotpajamas.android.blueteeth.main.MainViewModel" />
+            type="com.robotpajamas.android.blueteeth.ui.scan.DeviceScanViewModel" />
     </data>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -26,10 +27,11 @@
             android:layout_height="match_parent"
             android:layout_marginTop="10dip">
 
-            <ListView
-                android:id="@android:id/list"
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/devices"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                bind:items="@{vm.devices}" />
 
         </android.support.v4.widget.SwipeRefreshLayout>
 
