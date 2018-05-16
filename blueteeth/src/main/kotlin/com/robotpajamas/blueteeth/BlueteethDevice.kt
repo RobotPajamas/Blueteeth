@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import com.robotpajamas.blueteeth.models.*
-import timber.log.Timber
 import java.util.*
 
 // TODO: Make this object threadsafe and async-safe (called twice in a row, should return a failure?)
@@ -34,14 +33,14 @@ class BlueteethDevice private constructor() : Device {
     // Autoreconnect == true is a slow connection, false is fast
     // https://stackoverflow.com/questions/22214254/android-ble-connect-slowly
     override fun connect(timeout: Int?, autoReconnect: Boolean, block: ConnectionHandler?) {
-        Timber.d("connect: Attempting to connect: Timeout=$timeout, autoReconnect=$autoReconnect")
+        BLog.d("connect: Attempting to connect: Timeout=$timeout, autoReconnect=$autoReconnect")
         this.autoReconnect = autoReconnect
         connectionHandler = block
         // TODO: Passing in a null context seems to work, but what are the consequences?
         // TODO: Should I grab the application context from the BlueteethManager? Seems odd...
         handler.post {
             if (isConnected) {
-                Timber.d("connect: Already connected, returning - disregarding autoReconnect")
+                BLog.d("connect: Already connected, returning - disregarding autoReconnect")
                 connectionHandler?.invoke(isConnected)
                 return@post
             }
@@ -50,10 +49,10 @@ class BlueteethDevice private constructor() : Device {
     }
 
     override fun disconnect(autoReconnect: Boolean) {
-        Timber.d("disconnect: Disconnecting... autoReconnect=$autoReconnect")
+        BLog.d("disconnect: Disconnecting... autoReconnect=$autoReconnect")
         this.autoReconnect = autoReconnect
         handler.post {
-            bluetoothGatt?.disconnect() ?: Timber.d("disconnect: Cannot disconnect - GATT is null")
+            bluetoothGatt?.disconnect() ?: BLog.d("disconnect: Cannot disconnect - GATT is null")
         }
     }
 
@@ -62,7 +61,7 @@ class BlueteethDevice private constructor() : Device {
     private var discoveryHandler: ServiceDiscovery? = null
 
     override fun discoverServices(block: ServiceDiscovery?) {
-        Timber.d("discoverServices: Attempting to discover services")
+        BLog.d("discoverServices: Attempting to discover services")
         discoveryHandler = block
         handler.post {
             if (!isConnected || bluetoothGatt == null) {
@@ -80,7 +79,7 @@ class BlueteethDevice private constructor() : Device {
     private var readHandler: ReadHandler? = null
 
     override fun read(characteristic: UUID, service: UUID, block: ReadHandler) {
-        Timber.d("read: Attempting to read $characteristic")
+        BLog.d("read: Attempting to read $characteristic")
 
         readHandler = block
         handler.post {
@@ -112,28 +111,28 @@ class BlueteethDevice private constructor() : Device {
 
     // TODO: Make this async
     override fun subscribeTo(characteristic: UUID, service: UUID, block: ReadHandler) {
-        Timber.d("subscribeTo: Adding Notification listener to %s", characteristic.toString())
+        BLog.d("subscribeTo: Adding Notification listener to %s", characteristic.toString())
 
         guard(bluetoothGatt != null && isConnected) {
-            Timber.e("subscribeTo: GATT is null or not connected")
+            BLog.e("subscribeTo: GATT is null or not connected")
             return
         }
 
         val gattService = bluetoothGatt?.getService(service)
         guard(gattService != null) {
-            Timber.e("subscribeTo: Service not available - %s", service.toString())
+            BLog.e("subscribeTo: Service not available - %s", service.toString())
             return
         }
 
         val gattCharacteristic = gattService?.getCharacteristic(characteristic)
         guard(gattCharacteristic != null) {
-            Timber.e("subscribeTo: Characteristic not available - %s", characteristic.toString())
+            BLog.e("subscribeTo: Characteristic not available - %s", characteristic.toString())
             return
         }
 
         val gattDescriptor = gattCharacteristic?.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
         guard(gattDescriptor != null) {
-            Timber.e("subscribeTo: Descriptor not available - %s", characteristic.toString())
+            BLog.e("subscribeTo: Descriptor not available - %s", characteristic.toString())
             return
         }
 
@@ -148,7 +147,7 @@ class BlueteethDevice private constructor() : Device {
     private var writeHandler: WriteHandler? = null
 
     override fun write(data: ByteArray, characteristic: UUID, service: UUID, type: Writable.Type, block: WriteHandler?) {
-        Timber.d("write: Attempting to write ${Arrays.toString(data)} to $characteristic")
+        BLog.d("write: Attempting to write ${Arrays.toString(data)} to $characteristic")
 
         writeHandler = block
         handler.post {
@@ -229,21 +228,21 @@ class BlueteethDevice private constructor() : Device {
     }
 
 //    fun indicateFrom(characteristic: UUID, service: UUID, characteristicReadListener: OnCharacteristicReadListener): Boolean {
-//        Timber.d("indicateFrom: Adding Notification listener to %s", characteristic.toString())
+//        BLog.d("indicateFrom: Adding Notification listener to %s", characteristic.toString())
 //        guard(bluetoothGatt != null && isConnected) {
-//            Timber.e("indicateFrom: GATT is null")
+//            BLog.e("indicateFrom: GATT is null")
 //            return false
 //        }
 //
 //        val gattService = bluetoothGatt?.getService(service)
 //        guard(gattService != null) {
-//            Timber.e("indicateFrom: Service not available - %s", service.toString())
+//            BLog.e("indicateFrom: Service not available - %s", service.toString())
 //            return false
 //        }
 //
 //        val gattCharacteristic = gattService?.getCharacteristic(characteristic)
 //        guard(gattCharacteristic != null) {
-//            Timber.e("indicateFrom: Characteristic not available - %s", characteristic.toString())
+//            BLog.e("indicateFrom: Characteristic not available - %s", characteristic.toString())
 //            return false
 //        }
 //
@@ -270,25 +269,25 @@ class BlueteethDevice private constructor() : Device {
         try {
             close()
         } finally {
-            Timber.e("Could not close the BlueteethDevice")
+            BLog.e("Could not close the BlueteethDevice")
         }
     }
 
     private val mGattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
-            Timber.d("onConnectionStateChange - gatt: $gatt, status: $status, newState: $newState")
+            BLog.d("onConnectionStateChange - gatt: $gatt, status: $status, newState: $newState")
 
             // Removed check for GATT_SUCCESS - do we care? I think the current state is all that matters...
             // TODO: When changing isConnected to a ConnectionState - account for STATE_CONNECTING as well
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
-                    Timber.d("onConnectionStateChange - Connected")
+                    BLog.d("onConnectionStateChange - Connected")
                     isConnected = true
                     connectionHandler?.invoke(isConnected)
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    Timber.d("onConnectionStateChange - Disconnected")
+                    BLog.d("onConnectionStateChange - Disconnected")
                     isConnected = false
                     connectionHandler?.invoke(isConnected)
                 }
@@ -299,7 +298,7 @@ class BlueteethDevice private constructor() : Device {
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             super.onServicesDiscovered(gatt, status)
-            Timber.d("onServicesDiscovered - gatt: $gatt, status: $status")
+            BLog.d("onServicesDiscovered - gatt: $gatt, status: $status")
 
             val result: Result<Boolean> = when (status) {
                 BluetoothGatt.GATT_SUCCESS -> Result.Success(true)
@@ -311,7 +310,7 @@ class BlueteethDevice private constructor() : Device {
 
         override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
             super.onCharacteristicRead(gatt, characteristic, status)
-            Timber.d("onCharacteristicRead - gatt: $gatt, status: $status, characteristic: $characteristic")
+            BLog.d("onCharacteristicRead - gatt: $gatt, status: $status, characteristic: $characteristic")
 
             val result: Result<ByteArray> = when (status) {
                 BluetoothGatt.GATT_SUCCESS -> Result.Success(characteristic.value)
@@ -323,7 +322,7 @@ class BlueteethDevice private constructor() : Device {
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
             super.onCharacteristicWrite(gatt, characteristic, status)
-            Timber.d("onCharacteristicWrite - gatt: $gatt, status: $status, characteristic: $characteristic")
+            BLog.d("onCharacteristicWrite - gatt: $gatt, status: $status, characteristic: $characteristic")
 
             val result: Result<Boolean> = when (status) {
                 BluetoothGatt.GATT_SUCCESS -> Result.Success(true)
@@ -335,7 +334,7 @@ class BlueteethDevice private constructor() : Device {
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             super.onCharacteristicChanged(gatt, characteristic)
-            Timber.d("OnCharacteristicChanged - gatt: $gatt, characteristic: $characteristic")
+            BLog.d("OnCharacteristicChanged - gatt: $gatt, characteristic: $characteristic")
             notifications[characteristic.uuid.toString()]?.invoke(Result.Success(characteristic.value))
         }
     }
