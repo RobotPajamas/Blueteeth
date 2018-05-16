@@ -56,8 +56,6 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:support-annotations:27.1.1'
-    // TODO: Remove this dependency - Create LogLevel API + Standard logging
-    implementation 'com.jakewharton.timber:timber:4.5.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation 'junit:junit:4.12'
 }

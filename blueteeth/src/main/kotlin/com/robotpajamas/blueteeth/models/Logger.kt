@@ -1,6 +1,5 @@
 package com.robotpajamas.blueteeth.models
 
-import android.util.Log
 import com.robotpajamas.blueteeth.blueteethLogger
 
 interface Logger {

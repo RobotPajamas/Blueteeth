@@ -8,14 +8,12 @@ import android.os.Handler
 
 import com.robotpajamas.blueteeth.listeners.OnDeviceDiscoveredListener
 import com.robotpajamas.blueteeth.listeners.OnScanCompletedListener
+import com.robotpajamas.blueteeth.models.BLog
 import com.robotpajamas.blueteeth.models.Logger
 
 import java.util.ArrayList
 
-import timber.log.Timber
-
-
-var blueteethLogger: Logger? = null
+internal var blueteethLogger: Logger? = null
 
 // TODO: Fix support for pre-Lollipop vs post
 // TODO: Make this less depedendent on the Context?
@@ -23,7 +21,7 @@ var blueteethLogger: Logger? = null
 // TODO:Remove context
 @SuppressLint("StaticFieldLeak")
 object Blueteeth {
-//class Blueteeth private constructor() {
+    //class Blueteeth private constructor() {
     init {
         println("($this) is in initialization")
     }
@@ -39,7 +37,7 @@ object Blueteeth {
 //        // Using this syntax to keep the usage compatible with Blueteeth 0.2.0
 //        // TODO: Update this to something closer to Swift or more Kotlin-esque
 //        @JvmStatic fun with(context: Context): Blueteeth {
-//            Timber.e("in With statement")
+//            BLog.e("in With statement")
 //            if (instance == null) {
 //                instance = Blueteeth(context)
 //            }
@@ -80,37 +78,23 @@ object Blueteeth {
     private var mOnScanCompletedListener: OnScanCompletedListener? = null
     private var mOnDeviceDiscoveredListener: OnDeviceDiscoveredListener? = null
 
-    /**
-     * Controls the level of logging.
-     */
-    enum class LogLevel {
-        None,
-        Debug;
-
-        fun log(): Boolean {
-            return this != None
-        }
-    }
-
-    private val mLogLevel = LogLevel.None
-
     @Throws(RuntimeException::class)
     fun init(context: Context) {
-        Timber.e("In Constructor")
+        BLog.e("In Constructor")
         // Grab the application context in case an activity context was passed in
         mContext = context.applicationContext
 
-        Timber.d("Initializing BluetoothManager")
+        BLog.d("Initializing BluetoothManager")
         val bleManager: BluetoothManager? = mContext?.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         if (bleManager == null) {
-            Timber.e("Unable to initialize BluetoothManager.")
+            BLog.e("Unable to initialize BluetoothManager.")
             throw RuntimeException()
         }
 
-        Timber.d("Initializing BLEAdapter")
+        BLog.d("Initializing BLEAdapter")
         mBLEAdapter = bleManager.adapter
         if (mBLEAdapter == null) {
-            Timber.e("Unable to obtain a BluetoothAdapter or Bluetooth is not enabled")
+            BLog.e("Unable to obtain a BluetoothAdapter or Bluetooth is not enabled")
             // TODO: Relax the constraint on Bluetooth being enabled with a runtime error instead
             throw RuntimeException()
         }
@@ -123,7 +107,7 @@ object Blueteeth {
      * @param deviceDiscoveredListener callback will be called after each new device discovery
      */
     fun scanForPeripherals(deviceDiscoveredListener: OnDeviceDiscoveredListener) {
-        Timber.d("scanForPeripherals")
+        BLog.d("scanForPeripherals")
         mOnDeviceDiscoveredListener = deviceDiscoveredListener
         scanForPeripherals()
     }
@@ -140,7 +124,7 @@ object Blueteeth {
     fun scanForPeripherals(scanTimeoutMillis: Int,
                            deviceDiscoveredListener: OnDeviceDiscoveredListener,
                            scanCompletedListener: OnScanCompletedListener) {
-        Timber.d("scanForPeripherals")
+        BLog.d("scanForPeripherals")
         mOnDeviceDiscoveredListener = deviceDiscoveredListener
         scanForPeripherals(scanTimeoutMillis, scanCompletedListener)
     }
@@ -155,7 +139,7 @@ object Blueteeth {
      */
     fun scanForPeripherals(scanTimeoutMillis: Int,
                            scanCompletedListener: OnScanCompletedListener) {
-        Timber.d("scanForPeripheralsWithTimeout")
+        BLog.d("scanForPeripheralsWithTimeout")
         mOnScanCompletedListener = scanCompletedListener
         scanForPeripherals()
         mHandler.postDelayed({ this.stopScanForPeripherals() }, scanTimeoutMillis.toLong())
@@ -165,7 +149,7 @@ object Blueteeth {
      * Scans for nearby peripherals (no timeout) and fills the mScannedPeripherals ArrayList.
      */
     fun scanForPeripherals() {
-        Timber.d("scanForPeripherals")
+        BLog.d("scanForPeripherals")
         clearPeripherals()
         isScanning = true
         mBLEAdapter?.startLeScan(mBLEScanCallback)
@@ -184,7 +168,7 @@ object Blueteeth {
      * Stops ongoing scan process
      */
     fun stopScanForPeripherals() {
-        Timber.d("stopScanForPeripherals")
+        BLog.d("stopScanForPeripherals")
         isScanning = false
         mBLEAdapter?.stopLeScan(mBLEScanCallback)
         mOnScanCompletedListener?.call(mScannedPeripherals)
@@ -198,3 +182,9 @@ object Blueteeth {
         mOnDeviceDiscoveredListener?.call(blueteethDevice)
     }
 }
+
+var Blueteeth.logger: Logger?
+    get() = blueteethLogger
+    set(value) {
+        blueteethLogger = value
+    }
