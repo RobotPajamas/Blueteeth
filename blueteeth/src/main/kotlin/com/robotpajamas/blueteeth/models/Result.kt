@@ -8,7 +8,7 @@ sealed class Result<Value> {
         override val error: Exception? = null
     }
 
-    class Failure(override val error: Exception) : Result<Nothing>() {
+    class Failure<Nothing>(override val error: Exception) : Result<Nothing>() {
         override val value: Nothing? = null
     }
 

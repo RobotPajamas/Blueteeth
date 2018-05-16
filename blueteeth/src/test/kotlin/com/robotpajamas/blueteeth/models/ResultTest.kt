@@ -42,14 +42,14 @@ class ResultTest {
     @Test
     fun failure_whenConstructed_shouldNotPopulateValue() {
         val exception = NullPointerException()
-        val result = Result.Failure(exception)
+        val result: Result<Any> = Result.Failure(exception)
         assertNull(result.value)
     }
 
     @Test
     fun failure_whenConstructed_shouldPopulateError() {
         val exception = NullPointerException()
-        val result = Result.Failure(exception)
+        val result: Result<Any> = Result.Failure(exception)
         assertEquals(result.error, exception)
     }
 
@@ -67,13 +67,13 @@ class ResultTest {
 
     @Test
     fun isSuccess_whenFailureCreated_shouldReturnFalse() {
-        val result = Result.Failure(NullPointerException())
+        val result: Result<Any> = Result.Failure(NullPointerException())
         assertFalse(result.isSuccess)
     }
 
     @Test
     fun isFailure_whenFailureCreated_shouldReturnTrue() {
-        val result = Result.Failure(NullPointerException())
+        val result: Result<Any> = Result.Failure(NullPointerException())
         assertTrue(result.isFailure)
     }
 
@@ -90,7 +90,7 @@ class ResultTest {
 
     @Test
     fun successCallback_whenFailureCreated_shouldNotBeCalled() {
-        val result = Result.Failure(NullPointerException())
+        val result: Result<Any> = Result.Failure(NullPointerException())
         result.success { fail() }
     }
 
@@ -102,7 +102,7 @@ class ResultTest {
 
     @Test
     fun failureCallback_whenFailureCreated_shouldBeCalled() {
-        val result = Result.Failure(NullPointerException())
+        val result: Result<Any> = Result.Failure(NullPointerException())
         var failureCalled = false
         result.failure {
             failureCalled = true
@@ -119,7 +119,7 @@ class ResultTest {
     @Test(expected = NullPointerException::class)
     fun unwrap_whenFailureCreated_shouldThrowException() {
         val exception = NullPointerException()
-        val result = Result.Failure(exception)
+        val result: Result<Any> = Result.Failure(exception)
         result.unwrap()
     }
 }
