@@ -6,12 +6,7 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.robotpajamas.android.blueteeth.peripherals.SamplePeripheral;
-import com.robotpajamas.blueteeth.Blueteeth;
 import com.robotpajamas.blueteeth.BlueteethDevice;
-import com.robotpajamas.blueteeth.BlueteethResponse;
-
-import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
