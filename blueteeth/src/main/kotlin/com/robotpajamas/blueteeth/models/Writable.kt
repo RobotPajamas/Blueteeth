@@ -2,7 +2,7 @@ package com.robotpajamas.blueteeth.models
 
 import java.util.*
 
-typealias WriteHandler = ((Result<Unit>) -> Unit)
+typealias WriteHandler = ((Result<Boolean>) -> Unit)
 
 interface Writable : Connectable {
     enum class Type { WITH_RESPONSE, WITHOUT_RESPONSE }
