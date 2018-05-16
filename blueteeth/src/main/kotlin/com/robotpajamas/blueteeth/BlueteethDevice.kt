@@ -34,6 +34,7 @@ class BlueteethDevice private constructor() : Device {
     // Autoreconnect == true is a slow connection, false is fast
     // https://stackoverflow.com/questions/22214254/android-ble-connect-slowly
     override fun connect(timeout: Int?, autoReconnect: Boolean, block: ConnectionHandler?) {
+        Timber.d("connect: Attempting to connect: Timeout=$timeout, autoReconnect=$autoReconnect")
         this.autoReconnect = autoReconnect
         connectionHandler = block
         // TODO: Passing in a null context seems to work, but what are the consequences?
@@ -49,6 +50,7 @@ class BlueteethDevice private constructor() : Device {
     }
 
     override fun disconnect(autoReconnect: Boolean) {
+        Timber.d("disconnect: Disconnecting... autoReconnect=$autoReconnect")
         this.autoReconnect = autoReconnect
         handler.post {
             bluetoothGatt?.disconnect() ?: Timber.d("disconnect: Cannot disconnect - GATT is null")

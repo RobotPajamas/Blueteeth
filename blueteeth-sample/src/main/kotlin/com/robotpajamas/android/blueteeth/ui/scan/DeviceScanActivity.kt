@@ -1,6 +1,6 @@
 package com.robotpajamas.android.blueteeth.ui.scan
 
-import android.app.ListActivity
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -8,16 +8,25 @@ import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
-import android.widget.ListView
 import android.widget.Toast
 import com.robotpajamas.android.blueteeth.R
 import com.robotpajamas.android.blueteeth.databinding.ActivityScanBinding
+import com.robotpajamas.android.blueteeth.ui.device.DeviceActivity
+import com.robotpajamas.android.blueteeth.ui.widgets.recyclers.RecyclerItemClickListener
 import com.robotpajamas.blueteeth.Blueteeth
 
-class DeviceScanActivity : ListActivity(),
+class DeviceScanActivity : Activity(),
+        DeviceScanViewModel.StateHandler,
         DeviceScanViewModel.Navigator {
 
-    private val vm by lazy { DeviceScanViewModel(this) }
+    private val vm by lazy { DeviceScanViewModel(this, this) }
+    private val touchListener by lazy {
+        RecyclerItemClickListener(this, binding.devices, object : RecyclerItemClickListener.OnItemClickListener {
+            override fun onItemClick(view: View, position: Int) {
+                vm.select(position)
+            }
+        })
+    }
 
     private lateinit var binding: ActivityScanBinding
 
@@ -33,31 +42,13 @@ class DeviceScanActivity : ListActivity(),
         binding.vm = vm
         binding.devices.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.devices.adapter = DeviceScanAdapter()
-
-//        binding.swiperefresh.setOnRefreshListener { startScanning() }
-//        listAdapter = deviceAdapter
-    }
-
-    override fun onResume() {
-        super.onResume()
-        vm.startScan()
+        binding.devices.addOnItemTouchListener(touchListener)
+        binding.swiperefresh.setOnRefreshListener { vm.startScan() }
     }
 
     override fun onPause() {
         super.onPause()
         vm.stopScan()
-    }
-
-    override fun onListItemClick(listView: ListView, view: View, position: Int, id: Long) {
-        super.onListItemClick(listView, view, position, id)
-        stopScanning()
-    }
-
-
-    // Update the button, and shut off the progress bar
-    private fun stopScanning() {
-        binding.swiperefresh.isRefreshing = false
-        Blueteeth.stopScanForPeripherals()
     }
 
     // Check for BLE support - also checked from Android manifest.
@@ -93,9 +84,17 @@ class DeviceScanActivity : ListActivity(),
 
     }
 
+    override fun scanning() {
+        binding.swiperefresh.isRefreshing = true
+    }
+
+    override fun notScanning() {
+        binding.swiperefresh.isRefreshing = false
+    }
+
     override fun navigateNext(macAddress: String) {
-//        val intent = Intent(this, DeviceActivity::class)
-//        intent.putExtra(getString(R.string.extra_mac_address), macAddress)
-//        startActivity(intent)
+        val intent = Intent(this, DeviceActivity::class.java)
+        intent.putExtra(getString(R.string.extra_mac_address), macAddress)
+        startActivity(intent)
     }
 }

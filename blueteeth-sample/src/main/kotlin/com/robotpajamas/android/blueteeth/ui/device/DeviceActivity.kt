@@ -9,16 +9,16 @@ import com.robotpajamas.android.blueteeth.databinding.ActivityDeviceBinding
 class DeviceActivity : Activity(),
         DeviceViewModel.Navigator {
 
-    private val vm by lazy { DeviceViewModel(this) }
+    private val vm by lazy {
+        val macAddress = intent.getStringExtra(getString(R.string.extra_mac_address)) ?: ""
+        DeviceViewModel(macAddress, this)
+    }
     private lateinit var binding: ActivityDeviceBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_device)
         binding.vm = vm
-
-        val macAddress = intent.getStringExtra(getString(R.string.extra_mac_address))
-        //        mSamplePeripheral = new SamplePeripheral(Blueteeth.INSTANCE.getPeripheral(macAddress));
     }
 
     override fun onDestroy() {

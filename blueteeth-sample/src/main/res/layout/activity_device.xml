@@ -86,7 +86,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="@{() -> vm.connect()}"
                     android:text="@string/connect"
-                    android:visibility="@{vm.connected ? View.VISIBLE : View.GONE}" />
+                    android:visibility="@{vm.connected ? View.GONE : View.VISIBLE}" />
 
                 <Button
                     android:id="@+id/button_disconnect"
@@ -94,7 +94,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="@{() -> vm.disconnect()}"
                     android:text="@string/disconnect"
-                    android:visibility="@{vm.connected ? View.GONE : View.VISIBLE}" />
+                    android:visibility="@{vm.connected ? View.VISIBLE : View.GONE}" />
             </FrameLayout>
 
         </LinearLayout>
