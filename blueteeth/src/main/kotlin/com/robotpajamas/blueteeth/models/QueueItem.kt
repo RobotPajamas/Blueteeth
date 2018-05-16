@@ -19,6 +19,7 @@ class QueueItem<T>(val name: String = "QueueItem",
     init {
         assert(timeout >= 0, { "QueueItem timeout must be >= 0" })
         completion?.let { add(it) }
+        BLog.d("Creating QueueItem with name $name and timeout of $timeout seconds")
     }
 
     fun add(completion: CompletionBlock<T>) {

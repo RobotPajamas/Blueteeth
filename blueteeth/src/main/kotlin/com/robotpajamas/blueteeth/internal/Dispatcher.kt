@@ -47,7 +47,7 @@ internal class Dispatcher {
                 }
                 active?.timeout()
             }
-            dispatchHandler.postDelayed(cancel, it.timeout * 1L)
+            dispatchHandler.postDelayed(cancel, it.timeout * 1000L)
             executor.execute(it)
         }
     }
