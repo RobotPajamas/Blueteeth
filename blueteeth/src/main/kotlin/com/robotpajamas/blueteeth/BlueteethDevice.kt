@@ -15,6 +15,23 @@ import java.util.*
 
 // TODO: Make this object threadsafe and async-safe (called twice in a row, should return a failure?)
 class BlueteethDevice private constructor() : Device {
+
+    private var bluetoothDevice: BluetoothDevice? = null
+
+    private var connectionHandler: ConnectionHandler? = null
+    private var autoReconnect = false
+
+    var name: String = ""
+        private set
+
+    var id: String = ""
+        private set
+
+    /** Connectable **/
+
+    var isConnected = false
+        private set
+
     override fun connect(timeout: Int?, autoReconnect: Boolean, block: ConnectionHandler?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -23,9 +40,13 @@ class BlueteethDevice private constructor() : Device {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    /** Discoverable **/
+
     override fun discoverServices(block: ServiceDiscovery?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    /** Readable **/
 
     override fun read(characteristic: UUID, service: UUID, block: ReadHandler) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -35,6 +56,8 @@ class BlueteethDevice private constructor() : Device {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    /** Writable **/
+
     override fun write(data: ByteArray, characteristic: UUID, service: UUID, type: Writable.Type, block: WriteHandler?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -42,8 +65,6 @@ class BlueteethDevice private constructor() : Device {
     // TODO: The handler posts would be better if abstracted away - Does this need to be dependency injected for testing?
     private val mHandler = Handler(Looper.getMainLooper())
     private var mContext: Context? = null
-
-    var bluetoothDevice: BluetoothDevice? = null
 
     private var mScanRecord: ByteArray = ByteArray(0)
     private var mBluetoothGatt: BluetoothGatt? = null
@@ -58,15 +79,14 @@ class BlueteethDevice private constructor() : Device {
     var rssi: Int = 0
         internal set
 
-    var name: String = ""
 
     var macAddress: String = "00:00:00:00:00:00"
 
-    var scanRecord: ByteArray
-        get() = mScanRecord
-        internal set(scanRecord) {
-            mScanRecord = mScanRecord
-        }
+//    var scanRecord: ByteArray
+//        get() = mScanRecord
+//        internal set(scanRecord) {
+//            mScanRecord = mScanRecord
+//        }
 
     // TODO: This is done pretty poorly - fix this up...
     enum class BondState {
@@ -91,8 +111,6 @@ class BlueteethDevice private constructor() : Device {
     var bondState = BondState.UNKNOWN
         private set
 
-    var isConnected: Boolean = false
-        private set
 
     /***
      * Default constructor with invalid values - only here to help

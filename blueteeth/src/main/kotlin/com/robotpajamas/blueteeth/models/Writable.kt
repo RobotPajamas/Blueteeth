@@ -4,7 +4,7 @@ import java.util.*
 
 typealias WriteHandler = ((Result<Unit>) -> Unit)
 
-interface Writable {
+interface Writable : Connectable {
     enum class Type { WITH_RESPONSE, WITHOUT_RESPONSE }
 
     fun write(data: ByteArray,
