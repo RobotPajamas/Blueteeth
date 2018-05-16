@@ -8,10 +8,14 @@ import android.os.Handler
 
 import com.robotpajamas.blueteeth.listeners.OnDeviceDiscoveredListener
 import com.robotpajamas.blueteeth.listeners.OnScanCompletedListener
+import com.robotpajamas.blueteeth.models.Logger
 
 import java.util.ArrayList
 
 import timber.log.Timber
+
+
+var blueteethLogger: Logger? = null
 
 // TODO: Fix support for pre-Lollipop vs post
 // TODO: Make this less depedendent on the Context?
