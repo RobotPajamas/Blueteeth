@@ -9,7 +9,7 @@ android {
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        applicationId "com.robotpajamas.android.blueteeth"
+        applicationId "com.robotpajamas.android.blueteeth.java"
         minSdkVersion 19
         targetSdkVersion 22
         versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch

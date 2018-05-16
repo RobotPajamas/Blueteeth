@@ -80,7 +80,7 @@ public class MainActivity extends ListActivity {
             Timber.d("On Scan completed");
             mSwipeRefresh.setRefreshing(false);
             for (BlueteethDevice device : bleDevices) {
-                if (!TextUtils.isEmpty(device.getBluetoothDevice().getName())) {
+                if (!TextUtils.isEmpty(device.getName())) {
                     Timber.d("%s - %s", device.getName(), device.getMacAddress());
                     mDeviceAdapter.add(device);
                 }

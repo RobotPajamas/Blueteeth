@@ -24,7 +24,7 @@ class DeviceScanViewModel(private val navigator: Navigator) : BaseObservable() {
 
     fun startScan() {
         Blueteeth.scanForPeripherals(DEVICE_SCAN_MILLISECONDS, OnScanCompletedListener { bleDevices ->
-            devices = bleDevices.filter { it.bluetoothDevice?.name?.isNotBlank() ?: false }
+            devices = bleDevices.filter { it.name.isNotBlank() ?: false }
         })
     }
 

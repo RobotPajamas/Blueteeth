@@ -1,17 +1,12 @@
 package com.robotpajamas.blueteeth
 
 import android.bluetooth.*
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
-import com.robotpajamas.blueteeth.listeners.*
 import com.robotpajamas.blueteeth.models.*
 import timber.log.Timber
 import java.util.*
-
 
 // TODO: Make this object threadsafe and async-safe (called twice in a row, should return a failure?)
 class BlueteethDevice private constructor() : Device {
@@ -22,11 +17,11 @@ class BlueteethDevice private constructor() : Device {
     private var bluetoothDevice: BluetoothDevice? = null
     private var bluetoothGatt: BluetoothGatt? = null
 
-    var name: String = ""
-        private set
+    val name: String
+        get() = bluetoothDevice?.name ?: ""
 
-    var id: String = ""
-        private set
+    val id: String
+        get() = bluetoothDevice?.address ?: ""
 
     /** Connectable **/
 
@@ -219,8 +214,6 @@ class BlueteethDevice private constructor() : Device {
 
     internal constructor(context: Context, device: BluetoothDevice) : this() {
         bluetoothDevice = device
-        name = device.name ?: ""
-        macAddress = device.address ?: ""
         // TODO: Need this for registering to the bonding process - ugly...
         this.context = context
     }

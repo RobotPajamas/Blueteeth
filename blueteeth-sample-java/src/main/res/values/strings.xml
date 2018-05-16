@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Blueteeth Sample</string>
+    <string name="app_name">Blueteeth Java</string>
     <string name="extra_mac_address">com.robotpajamas.android.blueteeth.mac_address</string>
     <string name="connect">Connect</string>
     <string name="read">Read</string>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Blueteeth Sample</string>
+    <string name="app_name">Blueteeth</string>
     <string name="connect">Connect</string>
     <string name="read">Read</string>
     <string name="write">Write</string>
