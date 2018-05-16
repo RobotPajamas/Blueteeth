@@ -3,10 +3,11 @@ package com.robotpajamas.android.blueteeth.peripherals;
 import com.robotpajamas.blueteeth.BlueteethDevice;
 import com.robotpajamas.blueteeth.listeners.OnCharacteristicReadListener;
 import com.robotpajamas.blueteeth.listeners.OnCharacteristicWriteListener;
+import com.robotpajamas.blueteeth.models.Writable;
 
 import java.util.UUID;
 
-public class SamplePeripheral extends BaseBluetoothPeripheral {
+public class SamplePeripheral {
 
     // Custom Service
     private static final UUID SERVICE_TEST = UUID.fromString("00726f62-6f74-7061-6a61-6d61732e6361");
@@ -22,7 +23,7 @@ public class SamplePeripheral extends BaseBluetoothPeripheral {
     private static final UUID CHARACTERISTIC_READ_ECHO = UUID.fromString("07726f62-6f74-7061-6a61-6d61732e6361");
 
     public SamplePeripheral(BlueteethDevice device) {
-        super(device);
+        
     }
 
     public void writeCounter(byte value, OnCharacteristicWriteListener writeListener) {
@@ -36,6 +37,8 @@ public class SamplePeripheral extends BaseBluetoothPeripheral {
     }
 
     public void readCounter(OnCharacteristicReadListener readListener) {
+//        mPeripheral.read(CHARACTERISTIC_READ, SERVICE_TEST, readListener);
+
 //        BlueteethUtils.read(CHARACTERISTIC_READ, SERVICE_TEST, mPeripheral, readListener);
     }
 
@@ -48,13 +51,8 @@ public class SamplePeripheral extends BaseBluetoothPeripheral {
     }
 
     public void writeEcho(byte[] dataToWrite, OnCharacteristicWriteListener writeListener) {
-//        BlueteethUtils.writeData(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, mPeripheral, writeListener);
-        mPeripheral.writeCharacteristic(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, writeListener);
+//        mPeripheral.write(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, Writable.Type.WITHOUT_RESPONSE, null);
     }
-
-//    public void writeNoResponseEcho(byte[] dataToWrite) {
-//        mPeripheral.writeCharacteristic(dataToWrite, CHARACTERISTIC_WRITE_ECHO, SERVICE_TEST, null);
-//    }
 
     public void readEcho(OnCharacteristicReadListener readListener) {
 //        BlueteethUtils.read(CHARACTERISTIC_READ_ECHO, SERVICE_TEST, mPeripheral, readListener);

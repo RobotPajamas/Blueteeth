@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 
-// Manifest version information
 def versionMajor = 0
 def versionMinor = 0
 def versionPatch = 1
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.1'
 
     defaultConfig {
         applicationId "com.robotpajamas.android.blueteeth"
@@ -24,16 +24,24 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+    dataBinding {
+        enabled = true
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:27.0.2'
+    kapt "com.android.databinding:compiler:$android_tools"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+
     implementation 'com.jakewharton.timber:timber:4.5.1'
-    implementation 'com.jakewharton:butterknife:8.8.1'
     implementation project(':blueteeth')
 }
