@@ -8,3 +8,5 @@
 blueteeth-sample.iml
 blueteeth.iml
 .idea/caches
+test-peripheral/nodejs/node_modules
+test-peripheral/nodejs/dist
