@@ -1,0 +1,36 @@
+{
+    "compilerOptions": {
+        /* Basic Options */
+        "target": "es5",
+        "module": "es6",
+        "lib": [
+            "es5",
+            "es6",
+            "dom"
+        ],
+        "emitDecoratorMetadata": true,
+        "noEmitOnError": true,
+        "noImplicitReturns": true,
+        "outDir": "dist",
+        "removeComments": false, // TODO: True?
+        "sourceMap": true,
+        /* Strict Typechecking Options */
+        "strict": true,
+        "strictPropertyInitialization": false,
+        /* Module Resolution Options */
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "types": [
+            "node"
+        ],
+        "typeRoots": [
+            "@types",
+            "./@types"
+        ],
+        /* Experimental Options */
+        "experimentalDecorators": true,
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
