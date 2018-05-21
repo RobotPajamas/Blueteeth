@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import com.robotpajamas.blueteeth.extensions.compositeId
+import com.robotpajamas.blueteeth.extensions.getCharacteristic
 import com.robotpajamas.blueteeth.internal.Dispatcher
 import com.robotpajamas.blueteeth.models.*
 import java.util.*
@@ -17,6 +18,7 @@ class BlueteethDevice private constructor() : Device {
     private val handler = Handler(Looper.getMainLooper())
     private var bluetoothDevice: BluetoothDevice? = null
     private var bluetoothGatt: BluetoothGatt? = null
+    private val subscriptionDescriptor = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
     private var dispatcher = Dispatcher()
 
@@ -45,7 +47,7 @@ class BlueteethDevice private constructor() : Device {
         handler.post {
             if (isConnected) {
                 BLog.d("connect: Already connected, returning - disregarding autoReconnect")
-                connectionHandler?.invoke(isConnected)
+                connected()
                 return@post
             }
             bluetoothGatt = bluetoothDevice?.connectGatt(null, autoReconnect, mGattCallback)
@@ -58,6 +60,25 @@ class BlueteethDevice private constructor() : Device {
         handler.post {
             bluetoothGatt?.disconnect() ?: BLog.d("disconnect: Cannot disconnect - GATT is null")
         }
+    }
+
+    private fun connected() {
+        isConnected = true
+        connectionHandler?.invoke(isConnected)
+    }
+
+//    private fun connecting() {
+//
+//    }
+
+    private fun disconnected() {
+        isConnected = false
+        // Clear all pending queue items
+        dispatcher.clear()
+        // Clear all subscriptions
+        notifications.clear()
+        // Call appropriate callbacks
+        connectionHandler?.invoke(isConnected)
     }
 
     /** Discoverable **/
@@ -90,70 +111,65 @@ class BlueteethDevice private constructor() : Device {
         BLog.d("read: Attempting to read $characteristic")
 
         val compositeId = service.toString() + characteristic.toString()
-        val item = QueueItem<ByteArray>(compositeId,
-                execution = { cb ->
-                    if (!isConnected || bluetoothGatt == null) {
-                        cb(Result.Failure(RuntimeException("read: Device is not connected, or GATT is null")))
+        val item = QueueItem<ByteArray>(compositeId, execution = { cb ->
+            if (!isConnected) {
+                cb(Result.Failure(RuntimeException("read: Device is not connected")))
+                return@QueueItem
+            }
+
+            val gattCharacteristic = bluetoothGatt?.getCharacteristic(characteristic, service)
+                    ?: run {
+                        val error = "read: Failed to get Gatt Char: $characteristic in $service from $bluetoothGatt"
+                        cb(Result.Failure(RuntimeException(error)))
                         return@QueueItem
                     }
 
-                    val gattService = bluetoothGatt?.getService(service)
-                    if (gattService == null) {
-                        cb(Result.Failure(RuntimeException("read: Service not available - $service")))
-                        return@QueueItem
-                    }
-
-                    val gattCharacteristic = gattService.getCharacteristic(characteristic)
-                    if (gattCharacteristic == null) {
-                        cb(Result.Failure(RuntimeException("read: Characteristic not available - $characteristic")))
-                        return@QueueItem
-                    }
-
-                    bluetoothGatt?.readCharacteristic(gattCharacteristic)
-                },
-                completion = {
-                    it.failure {
-                        BLog.e("Read completion failed with $it")
-                    }
-                    block(it)
-                })
+            bluetoothGatt?.readCharacteristic(gattCharacteristic)
+        }) { result ->
+            result.failure {
+                BLog.e("Read completion failed with $it")
+            }
+            block(result)
+        }
 
         dispatcher.enqueue(item)
     }
 
     private val notifications = HashMap<String, ReadHandler>()
 
-    // TODO: Make this async
     override fun subscribeTo(characteristic: UUID, service: UUID, block: ReadHandler) {
         BLog.d("subscribeTo: Adding Notification listener to %s", characteristic.toString())
 
-        guard(bluetoothGatt != null && isConnected) {
-            BLog.e("subscribeTo: GATT is null or not connected")
-            return
-        }
+        val compositeId = service.toString() + characteristic.toString()
+        val item = QueueItem<Boolean>(subscriptionDescriptor.toString(), execution = { cb ->
+            if (!isConnected) {
+                cb(Result.Failure(RuntimeException("subscribe: Device is not connected")))
+                return@QueueItem
+            }
+            val gattCharacteristic = bluetoothGatt?.getCharacteristic(characteristic, service)
+                    ?: run {
+                        val error = "subscribe: Failed to get Gatt Char: $characteristic in $service from $bluetoothGatt"
+                        cb(Result.Failure(RuntimeException(error)))
+                        return@QueueItem
+                    }
 
-        val gattService = bluetoothGatt?.getService(service)
-        guard(gattService != null) {
-            BLog.e("subscribeTo: Service not available - %s", service.toString())
-            return
-        }
+            val gattDescriptor = gattCharacteristic.getDescriptor(subscriptionDescriptor)
+                    ?: run {
+                        val error = "subscribe: Descriptor not available - $compositeId"
+                        cb(Result.Failure(RuntimeException(error)))
+                        return@QueueItem
+                    }
 
-        val gattCharacteristic = gattService?.getCharacteristic(characteristic)
-        guard(gattCharacteristic != null) {
-            BLog.e("subscribeTo: Characteristic not available - %s", characteristic.toString())
-            return
+            notifications[compositeId] = block
+            bluetoothGatt?.setCharacteristicNotification(gattCharacteristic, true)
+            gattDescriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+            bluetoothGatt?.writeDescriptor(gattDescriptor)
+        }) { result ->
+            result.failure {
+                BLog.e("Read completion failed with $it")
+            }
         }
-
-        val gattDescriptor = gattCharacteristic?.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
-        guard(gattDescriptor != null) {
-            BLog.e("subscribeTo: Descriptor not available - %s", characteristic.toString())
-            return
-        }
-
-        notifications[characteristic.toString()] = block
-        bluetoothGatt?.setCharacteristicNotification(gattCharacteristic, true)
-        gattDescriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-        bluetoothGatt?.writeDescriptor(gattDescriptor)
+        dispatcher.enqueue(item)
     }
 
     /** Writable **/
@@ -162,55 +178,35 @@ class BlueteethDevice private constructor() : Device {
         BLog.d("write: Attempting to write ${Arrays.toString(data)} to $characteristic")
 
         val compositeId = service.toString() + characteristic.toString()
-        val item = QueueItem<Boolean>(compositeId,
-                execution = { cb ->
-                    if (!isConnected || bluetoothGatt == null) {
-                        cb(Result.Failure(RuntimeException("write: Device is not connected, or GATT is null")))
+        val item = QueueItem<Boolean>(compositeId, execution = { cb ->
+            if (!isConnected) {
+                cb(Result.Failure(RuntimeException("write: Device is not connected, or GATT is null")))
+                return@QueueItem
+            }
+
+            val gattCharacteristic = bluetoothGatt?.getCharacteristic(characteristic, service)
+                    ?: run {
+                        val error = "write: Failed to get Gatt Char: $characteristic in $service from $bluetoothGatt"
+                        cb(Result.Failure(RuntimeException(error)))
                         return@QueueItem
                     }
 
-                    val gattService = bluetoothGatt?.getService(service)
-                    if (gattService == null) {
-                        cb(Result.Failure(RuntimeException("write: Service not available - $service")))
-                        return@QueueItem
-                    }
+            gattCharacteristic.value = data
+            gattCharacteristic.writeType = when (type) {
+                Writable.Type.WITH_RESPONSE -> BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                Writable.Type.WITHOUT_RESPONSE -> BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+            }
 
-                    val gattCharacteristic = gattService.getCharacteristic(characteristic)
-                    if (gattCharacteristic == null) {
-                        cb(Result.Failure(RuntimeException("write: Characteristic not available - $characteristic")))
-                        return@QueueItem
-                    }
-
-                    gattCharacteristic.value = data
-                    gattCharacteristic.writeType = when (type) {
-                        Writable.Type.WITH_RESPONSE -> BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-                        Writable.Type.WITHOUT_RESPONSE -> BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                    }
-
-                    bluetoothGatt?.writeCharacteristic(gattCharacteristic)
-                },
-                completion = {
-                    it.failure {
-                        BLog.e("Write completion failed with $it")
-                    }
-                    block?.invoke(it)
-                })
+            bluetoothGatt?.writeCharacteristic(gattCharacteristic)
+        }) { result ->
+            result.failure {
+                BLog.e("Write completion failed with $it")
+            }
+            block?.invoke(result)
+        }
 
         dispatcher.enqueue(item)
     }
-
-    //    private var mScanRecord: ByteArray = ByteArray(0)
-//    var rssi: Int = 0
-//        internal set
-
-
-    var macAddress: String = "00:00:00:00:00:00"
-
-//    var scanRecord: ByteArray
-//        get() = mScanRecord
-//        internal set(scanRecord) {
-//            mScanRecord = mScanRecord
-//        }
 
     internal constructor(context: Context, device: BluetoothDevice) : this() {
         bluetoothDevice = device
@@ -225,32 +221,6 @@ class BlueteethDevice private constructor() : Device {
 //        this.rssi = rssi
 //        mScanRecord = scanRecord
     }
-
-//    fun indicateFrom(characteristic: UUID, service: UUID, characteristicReadListener: OnCharacteristicReadListener): Boolean {
-//        BLog.d("indicateFrom: Adding Notification listener to %s", characteristic.toString())
-//        guard(bluetoothGatt != null && isConnected) {
-//            BLog.e("indicateFrom: GATT is null")
-//            return false
-//        }
-//
-//        val gattService = bluetoothGatt?.getService(service)
-//        guard(gattService != null) {
-//            BLog.e("indicateFrom: Service not available - %s", service.toString())
-//            return false
-//        }
-//
-//        val gattCharacteristic = gattService?.getCharacteristic(characteristic)
-//        guard(gattCharacteristic != null) {
-//            BLog.e("indicateFrom: Characteristic not available - %s", characteristic.toString())
-//            return false
-//        }
-//
-//        bluetoothGatt?.setCharacteristicNotification(gattCharacteristic, true)
-//        val gattDescriptor = gattCharacteristic?.getDescriptor(characteristic)
-//        gattDescriptor?.value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
-//        bluetoothGatt?.writeDescriptor(gattDescriptor)
-//        return true
-//    }
 
     fun close() {
         bluetoothGatt?.disconnect()
@@ -282,17 +252,20 @@ class BlueteethDevice private constructor() : Device {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     BLog.d("onConnectionStateChange - Connected")
-                    isConnected = true
-                    connectionHandler?.invoke(isConnected)
+                    connected()
+                }
+                BluetoothProfile.STATE_CONNECTING -> {
+                    BLog.d("onConnectionStateChange - Connecting")
+//                    connecting()
+                }
+                BluetoothProfile.STATE_DISCONNECTING -> {
+                    BLog.d("onConnectionStateChange - Disconnecting")
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     BLog.d("onConnectionStateChange - Disconnected")
-                    isConnected = false
-                    connectionHandler?.invoke(isConnected)
+                    disconnected()
                 }
             }
-
-            // close();
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
@@ -330,8 +303,18 @@ class BlueteethDevice private constructor() : Device {
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             super.onCharacteristicChanged(gatt, characteristic)
-            BLog.d("OnCharacteristicChanged - gatt: $gatt, characteristic: $characteristic")
-            notifications[characteristic.uuid.toString()]?.invoke(Result.Success(characteristic.value))
+            BLog.d("OnCharacteristicChanged - gatt: $gatt, characteristic: ${characteristic.compositeId}")
+            notifications[characteristic.compositeId]?.invoke(Result.Success(characteristic.value))
+        }
+
+        override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
+            super.onDescriptorWrite(gatt, descriptor, status)
+            BLog.d("onDescriptorWrite - gatt: $gatt, descriptor: ${descriptor?.uuid?.toString()}, status: $status")
+            val result: Result<Boolean> = when (status) {
+                BluetoothGatt.GATT_SUCCESS -> Result.Success(true)
+                else -> Result.Failure(RuntimeException("onDescriptorWrite - Failed with status: $status"))
+            }
+            dispatcher.dispatched<Boolean>(descriptor?.uuid.toString())?.complete(result)
         }
     }
 }

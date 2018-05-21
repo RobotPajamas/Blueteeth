@@ -3,6 +3,7 @@ package com.robotpajamas.android.blueteeth.ui.device
 import android.databinding.BaseObservable
 import android.databinding.Bindable
 import com.robotpajamas.android.blueteeth.BR
+import com.robotpajamas.android.blueteeth.extensions.prepend
 import com.robotpajamas.blueteeth.Blueteeth
 import com.robotpajamas.blueteeth.BlueteethDevice
 import com.robotpajamas.blueteeth.models.Writable
@@ -35,10 +36,10 @@ class DeviceViewModel(private var macAddress: String,
     fun connect() {
         device.connect {
             connected = it
-            text += "Connection Status: $connected \n"
+            text = text.prepend("Connection Status: $connected\n")
             if (connected) {
                 device.discoverServices {
-                    text += "Service Discovery: ${it.value}\n"
+                    text = text.prepend("Service Discovery: ${it.value}\n")
                 }
             }
         }
@@ -50,32 +51,34 @@ class DeviceViewModel(private var macAddress: String,
 
     fun read() {
         device.read(CHARACTERISTIC_COUNTER, SERVICE_COUNTER) { result ->
-            text += "Read result: ${result.value?.toString(Charset.defaultCharset())} \n"
+            text = text.prepend("Read result: ${result.value?.toString(Charset.defaultCharset())}\n")
+            text = text.prepend("Read result: ${result.value?.contentToString()}\n")
         }
     }
 
     fun write() {
         device.write(byteArrayOf(1), CHARACTERISTIC_COUNTER, SERVICE_COUNTER, Writable.Type.WITH_RESPONSE) {
-            text += "Write result: ${it.value} \n"
+            text = text.prepend("Write result: ${it.value}\n")
         }
     }
 
     fun subscribe() {
         device.subscribeTo(CHARACTERISTIC_COUNTER, SERVICE_COUNTER) {
-            text += "Subscription read: ${it.value} \n"
+            text = text.prepend("Subscription read: ${it.value?.contentToString()}\n\n")
         }
     }
 
     fun reset() {
-        device.write(byteArrayOf(1), CHARACTERISTIC_COUNTER, SERVICE_COUNTER) {
-            text += "Write result: ${it.value} \n"
-        }
+//        device.write(byteArrayOf(1), CHARACTERISTIC_COUNTER, SERVICE_COUNTER) {
+//            text += "Write result: ${it.value} \n"
+//        }
     }
 
     fun test() {
         clear()
         reset()
-        for (i in 1..100) {
+        subscribe()
+        for (i in 1..10) {
             read()
             write()
         }

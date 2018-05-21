@@ -22,6 +22,14 @@ internal class Dispatcher {
     }
 
     @Synchronized
+    fun clear() {
+        // TODO: What to do with in-flight calls? Time out? Cancel?
+        dispatchHandler.removeCallbacksAndMessages(null)
+        active = null
+        queue.clear()
+    }
+
+    @Synchronized
     fun enqueue(item: QueueItem<*>) {
         // Append a completion callback
         item.add { dispatchNext() }

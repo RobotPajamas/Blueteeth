@@ -9,7 +9,7 @@ import com.robotpajamas.android.blueteeth.BR
 
 class DeviceScanViewModel(private val stateHandler: StateHandler, private val navigator: Navigator) : BaseObservable() {
 
-    private val DEVICE_SCAN_MILLISECONDS = 5000
+    private val DEVICE_SCAN_MILLISECONDS = 2000
 
     interface StateHandler {
         fun scanning()

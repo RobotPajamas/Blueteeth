@@ -11,24 +11,24 @@ interface Logger {
 }
 
 object BLog {
-    fun v(message: String, tag: String = "Blueteeth") {
-        blueteethLogger?.verbose("$tag: $message")
+    fun v(message: String, vararg args: Any?, tag: String = "Blueteeth") {
+        blueteethLogger?.verbose(String.format("$tag: $message", args))
     }
 
-    fun d(message: String, tag: String = "Blueteeth") {
-        blueteethLogger?.debug("$tag: $message")
+    fun d(message: String, vararg args: Any?, tag: String = "Blueteeth") {
+        blueteethLogger?.debug(String.format("$tag: $message", args))
     }
 
-    fun i(message: String, tag: String = "Blueteeth") {
-        blueteethLogger?.info("$tag: $message")
+    fun i(message: String, vararg args: Any?, tag: String = "Blueteeth") {
+        blueteethLogger?.info(String.format("$tag: $message", args))
     }
 
-    fun w(message: String, tag: String = "Blueteeth") {
-        blueteethLogger?.warning("$tag: $message")
+    fun w(message: String, vararg args: Any?, tag: String = "Blueteeth") {
+        blueteethLogger?.warning(String.format("$tag: $message", args))
     }
 
-    fun e(message: String, tag: String = "Blueteeth") {
-        blueteethLogger?.error("$tag: $message")
+    fun e(message: String, vararg args: Any?, tag: String = "Blueteeth") {
+        blueteethLogger?.error(String.format("$tag: $message", args))
     }
 
 }
