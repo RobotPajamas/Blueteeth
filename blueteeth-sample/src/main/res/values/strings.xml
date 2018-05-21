@@ -9,4 +9,5 @@
     <string name="swipe_to_start">Swipe to start scanning</string>
 
     <string name="extra_mac_address" translatable="false">com.robotpajamas.android.blueteeth.mac_address</string>
+    <string name="test">Test RW</string>
 </resources>

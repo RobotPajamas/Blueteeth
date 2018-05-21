@@ -5,6 +5,7 @@ import android.databinding.Bindable
 import com.robotpajamas.android.blueteeth.BR
 import com.robotpajamas.blueteeth.Blueteeth
 import com.robotpajamas.blueteeth.BlueteethDevice
+import com.robotpajamas.blueteeth.models.Writable
 import java.nio.charset.Charset
 import java.util.*
 
@@ -48,20 +49,35 @@ class DeviceViewModel(private var macAddress: String,
     }
 
     fun read() {
-        device.read(CHARACTERISTIC_MANUFACTURER_NAME, SERVICE_DEVICE_INFORMATION) { result ->
+        device.read(CHARACTERISTIC_COUNTER, SERVICE_COUNTER) { result ->
             text += "Read result: ${result.value?.toString(Charset.defaultCharset())} \n"
         }
     }
 
     fun write() {
-        device.write(byteArrayOf(1, 2, 3), UUID.fromString("2a24"), SERVICE_DEVICE_INFORMATION) {
+        device.write(byteArrayOf(1), CHARACTERISTIC_COUNTER, SERVICE_COUNTER, Writable.Type.WITH_RESPONSE) {
             text += "Write result: ${it.value} \n"
         }
     }
 
     fun subscribe() {
-        device.subscribeTo(UUID.fromString("2a24"), SERVICE_DEVICE_INFORMATION) {
+        device.subscribeTo(CHARACTERISTIC_COUNTER, SERVICE_COUNTER) {
             text += "Subscription read: ${it.value} \n"
+        }
+    }
+
+    fun reset() {
+        device.write(byteArrayOf(1), CHARACTERISTIC_COUNTER, SERVICE_COUNTER) {
+            text += "Write result: ${it.value} \n"
+        }
+    }
+
+    fun test() {
+        clear()
+        reset()
+        for (i in 1..100) {
+            read()
+            write()
         }
     }
 
@@ -78,4 +94,6 @@ class DeviceViewModel(private var macAddress: String,
     private val CHARACTERISTIC_SOFTWARE_VERSION = UUID.fromString("00002A28-0000-1000-8000-00805f9b34fb")
     private val CHARACTERISTIC_MANUFACTURER_NAME = UUID.fromString("00002A29-0000-1000-8000-00805f9b34fb")
 
+    private val SERVICE_COUNTER = UUID.fromString("00726f62-6f74-7061-6a61-6d61732e6361");
+    private val CHARACTERISTIC_COUNTER = UUID.fromString("01726f62-6f74-7061-6a61-6d61732e6361");
 }

@@ -70,6 +70,13 @@
             android:orientation="vertical">
 
             <Button
+                android:id="@+id/button_test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="@{() -> vm.test()}"
+                android:text="@string/test" />
+
+            <Button
                 android:id="@+id/button_clear"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
