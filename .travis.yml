@@ -1,0 +1,34 @@
+language: android
+jdk : oraclejdk8
+
+install:
+  - echo yes | sdkmanager "tools" &>/dev/null
+  - echo yes | sdkmanager "platform-tools" &>/dev/null
+  - echo yes | sdkmanager "build-tools;27.0.3" &>/dev/null
+  - echo yes | sdkmanager "platforms;android-27" &>/dev/null
+
+branches:
+  only:
+    - master
+    - develop
+
+notifications:
+  email: false
+
+sudo: false
+
+before_cache:
+  # Do not cache a few Gradle files/directories (see https://docs.travis-ci.com/user/languages/java/#Caching)
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    # Gradle dependencies
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    # Android build cache (see http://tools.android.com/tech-docs/build-cache)
+    - $HOME/.android/build-cache
+
+script :
+  - ./gradlew clean test
