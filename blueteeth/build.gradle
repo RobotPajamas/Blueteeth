@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 
 // Manifest version information
 def versionMajor = 0
-def versionMinor = 3
+def versionMinor = 4
 def versionPatch = 0
 
 ext {
@@ -19,7 +19,7 @@ ext {
     siteUrl = 'https://github.com/RobotPajamas/Blueteeth'
     gitUrl = 'https://github.com/RobotPajamas/Blueteeth.git'
 
-    libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}"
+    libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}-KOTSHOT"
 
     developerId = 'sureshjoshi'
     developerName = 'Suresh Joshi'
