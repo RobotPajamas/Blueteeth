@@ -42,6 +42,10 @@ class BlueteethDevice private constructor() : Device {
         BLog.d("connect: Attempting to connect: Timeout=$timeout, autoReconnect=$autoReconnect")
         this.autoReconnect = autoReconnect
         connectionHandler = block
+//        if (bluetoothGatt != null) {
+//            bluetoothGatt?.close()
+//            bluetoothGatt = null
+//        }
         // TODO: Passing in a null context seems to work, but what are the consequences?
         // TODO: Should I grab the application context from the BlueteethManager? Seems odd...
         handler.post {
@@ -50,7 +54,11 @@ class BlueteethDevice private constructor() : Device {
                 connected()
                 return@post
             }
-            bluetoothGatt = bluetoothDevice?.connectGatt(null, autoReconnect, mGattCallback)
+            if (bluetoothGatt != null) {
+                bluetoothGatt?.connect()
+            } else {
+                bluetoothGatt = bluetoothDevice?.connectGatt(null, autoReconnect, mGattCallback)
+            }
         }
     }
 
