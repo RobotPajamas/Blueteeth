@@ -1,5 +1,6 @@
 package com.robotpajamas.blueteeth.models
 
+import com.robotpajamas.dispatcher.Result
 import java.util.*
 
 typealias ReadHandler = ((Result<ByteArray>) -> Unit)
