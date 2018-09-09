@@ -16,6 +16,7 @@ import com.robotpajamas.blueteeth.BlueteethDevice;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
 import timber.log.Timber;
 
 public class MainActivity extends ListActivity {
@@ -68,7 +69,7 @@ public class MainActivity extends ListActivity {
 
         BlueteethDevice blueteethDevice = mDeviceAdapter.getItem(position);
         final Intent intent = new Intent(this, DeviceActivity.class);
-        intent.putExtra(getString(R.string.extra_mac_address), blueteethDevice.getMacAddress());
+        intent.putExtra(getString(R.string.extra_mac_address), blueteethDevice.getId());
         startActivity(intent);
     }
 
@@ -81,7 +82,7 @@ public class MainActivity extends ListActivity {
             mSwipeRefresh.setRefreshing(false);
             for (BlueteethDevice device : bleDevices) {
                 if (!TextUtils.isEmpty(device.getName())) {
-                    Timber.d("%s - %s", device.getName(), device.getMacAddress());
+                    Timber.d("%s - %s", device.getName(), device.getId());
                     mDeviceAdapter.add(device);
                 }
             }
