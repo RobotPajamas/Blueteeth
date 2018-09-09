@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 
 // Manifest version information
 def versionMajor = 0
-def versionMinor = 3
+def versionMinor = 4
 def versionPatch = 0
 
 ext {
@@ -35,7 +35,7 @@ android {
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 22
         versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -57,14 +57,17 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:support-annotations:27.1.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    api "com.robotpajamas.dispatcher:dispatcher:0.3.1"
     testImplementation 'junit:junit:4.12'
 }
 
-apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/installv1.gradle'
-apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/bintrayv1.gradle'
-// If there are issues from Github, then use the local files
-// apply from: '../jcenter/installv1.gradle'
-// apply from: '../jcenter/bintrayv1.gradle'
+if (project.rootProject.file('local.properties').exists()) {
+    apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/installv1.gradle'
+    apply from: 'https://raw.githubusercontent.com/sureshjoshi/JCenter/master/bintrayv1.gradle'
+    // If there are issues from Github, then use the local files
+    // apply from: '../jcenter/installv1.gradle'
+    // apply from: '../jcenter/bintrayv1.gradle'
+}
 
 tasks.withType(Javadoc) {
     enabled = false

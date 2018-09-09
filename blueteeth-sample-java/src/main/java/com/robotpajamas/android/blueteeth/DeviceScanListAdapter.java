@@ -53,7 +53,7 @@ public class DeviceScanListAdapter extends BaseAdapter {
 
         BlueteethDevice device = getItem(position);
         holder.deviceName.setText(device.getName());
-        holder.deviceMac.setText(device.getMacAddress());
+        holder.deviceMac.setText(device.getId());
 
         return convertView;
     }
@@ -62,7 +62,7 @@ public class DeviceScanListAdapter extends BaseAdapter {
         // Add only unique devices
         boolean isAlreadyInList = false;
         for (BlueteethDevice d : mDevices) {
-            if (device.getMacAddress().equals(d.getMacAddress())) {
+            if (device.getId().equals(d.getId())) {
                 isAlreadyInList = true;
                 break;
             }

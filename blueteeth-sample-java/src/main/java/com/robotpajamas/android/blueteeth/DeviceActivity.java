@@ -49,14 +49,14 @@ public class DeviceActivity extends Activity {
     @OnClick(R.id.button_connect)
     void connect() {
         if (mIsConnected) {
-            updateReceivedData(String.format("Attempting to disconnect from %s - %s...", device.getName(), device.getMacAddress()));
+            updateReceivedData(String.format("Attempting to disconnect from %s - %s...", device.getName(), device.getId()));
 //            device.disconnect(isConnected -> {
 //                updateReceivedData("Connection Status: " + Boolean.toString(isConnected) + "\n");
 //                mIsConnected = isConnected;
 //                runOnUiThread(mConnectionRunnable);
 //            });
         } else {
-            updateReceivedData(String.format("Attempting to connect to  %s - %s...", device.getName(), device.getMacAddress()));
+            updateReceivedData(String.format("Attempting to connect to  %s - %s...", device.getName(), device.getId()));
 //            device.connect(false, isConnected -> {
 //                updateReceivedData("Connection Status: " + Boolean.toString(isConnected));
 //                mIsConnected = isConnected;

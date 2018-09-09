@@ -1,6 +1,7 @@
-[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Blueteeth-blue.svg?style=flat)](http://android-arsenal.com/details/1/3512)
-
 # Blueteeth
+
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Blueteeth-blue.svg?style=flat)](http://android-arsenal.com/details/1/3512)
+![!Travis CI build badge](https://travis-ci.org/RobotPajamas/Blueteeth.svg?branch=master)
 
 ## What Is Blueteeth?
 
