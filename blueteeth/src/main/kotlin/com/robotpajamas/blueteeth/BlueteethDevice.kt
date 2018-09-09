@@ -249,8 +249,10 @@ class BlueteethDevice private constructor() : Device {
 
     fun close() {
         bluetoothGatt?.disconnect()
-        bluetoothGatt?.close()
-        bluetoothGatt = null
+        handler.post {
+            bluetoothGatt?.close()
+            bluetoothGatt = null
+        }
     }
 
     /***

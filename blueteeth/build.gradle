@@ -19,7 +19,7 @@ ext {
     siteUrl = 'https://github.com/RobotPajamas/Blueteeth'
     gitUrl = 'https://github.com/RobotPajamas/Blueteeth.git'
 
-    libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}-KOTSHOT"
+    libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}"
 
     developerId = 'sureshjoshi'
     developerName = 'Suresh Joshi'
