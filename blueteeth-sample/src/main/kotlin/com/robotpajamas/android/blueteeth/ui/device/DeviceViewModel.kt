@@ -14,6 +14,10 @@ class DeviceViewModel(private var macAddress: String,
                       private val navigator: Navigator,
                       private var device: BlueteethDevice = Blueteeth.getPeripheral(macAddress)) : BaseObservable() {
 
+    private val serviceUuid = UUID.fromString("00726f62-6f74-7061-6a61-6d61732e6361")
+    private val txUuid = UUID.fromString("01726f62-6f74-7061-6a61-6d61732e6361")
+    private val rxUuid = UUID.fromString("02726f62-6f74-7061-6a61-6d61732e6361")
+
     interface Navigator {
         fun navigateBack()
     }
@@ -50,20 +54,20 @@ class DeviceViewModel(private var macAddress: String,
     }
 
     fun read() {
-        device.read(CHARACTERISTIC_COUNTER, SERVICE_COUNTER) { result ->
+        device.read(rxUuid, serviceUuid) { result ->
             text = text.prepend("Read result: ${result.value?.toString(Charset.defaultCharset())}\n")
             text = text.prepend("Read result: ${result.value?.contentToString()}\n")
         }
     }
 
     fun write() {
-        device.write(byteArrayOf(1), CHARACTERISTIC_COUNTER, SERVICE_COUNTER, Writable.Type.WITH_RESPONSE) {
+        device.write(byteArrayOf(1), txUuid, serviceUuid, Writable.Type.WITH_RESPONSE) {
             text = text.prepend("Write result: ${it.value}\n")
         }
     }
 
     fun subscribe() {
-        device.subscribeTo(CHARACTERISTIC_COUNTER, SERVICE_COUNTER) {
+        device.subscribeTo(rxUuid, serviceUuid) {
             text = text.prepend("Subscription read: ${it.value?.contentToString()}\n\n")
         }
     }
@@ -87,16 +91,4 @@ class DeviceViewModel(private var macAddress: String,
     fun clear() {
         text = ""
     }
-
-    // TODO: Figure out what to do with these
-    private val SERVICE_DEVICE_INFORMATION = UUID.fromString("0000180A-0000-1000-8000-00805f9b34fb")
-    private val CHARACTERISTIC_MANUFACTURER_MODEL = UUID.fromString("00002A24-0000-1000-8000-00805f9b34fb")
-    private val CHARACTERISTIC_SERIAL_NUMBER = UUID.fromString("00002A27-0000-1000-8000-00805f9b34fb")
-    private val CHARACTERISTIC_FIRMWARE_VERSION = UUID.fromString("00002A26-0000-1000-8000-00805f9b34fb")
-    private val CHARACTERISTIC_HARDWARE_VERSION = UUID.fromString("00002A27-0000-1000-8000-00805f9b34fb")
-    private val CHARACTERISTIC_SOFTWARE_VERSION = UUID.fromString("00002A28-0000-1000-8000-00805f9b34fb")
-    private val CHARACTERISTIC_MANUFACTURER_NAME = UUID.fromString("00002A29-0000-1000-8000-00805f9b34fb")
-
-    private val SERVICE_COUNTER = UUID.fromString("00726f62-6f74-7061-6a61-6d61732e6361");
-    private val CHARACTERISTIC_COUNTER = UUID.fromString("01726f62-6f74-7061-6a61-6d61732e6361");
 }
