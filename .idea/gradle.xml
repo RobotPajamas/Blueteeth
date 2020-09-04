@@ -13,7 +13,6 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/blueteeth" />
             <option value="$PROJECT_DIR$/blueteeth-sample" />
-            <option value="$PROJECT_DIR$/blueteeth-sample-java" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
