@@ -20,13 +20,7 @@ class DeviceActivity : Activity(),
         binding = DataBindingUtil.setContentView(this, R.layout.activity_device)
         binding.vm = vm
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-//        mSamplePeripheral?.close()
-    }
-
-
+    
     override fun navigateBack() {
 
     }

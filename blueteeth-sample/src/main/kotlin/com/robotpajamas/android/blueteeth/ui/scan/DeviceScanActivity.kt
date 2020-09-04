@@ -4,11 +4,11 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.widget.Toast
+import androidx.databinding.DataBindingUtil
 import com.robotpajamas.android.blueteeth.R
 import com.robotpajamas.android.blueteeth.databinding.ActivityScanBinding
 import com.robotpajamas.android.blueteeth.ui.device.DeviceActivity
@@ -30,9 +30,25 @@ class DeviceScanActivity : Activity(),
 
     private lateinit var binding: ActivityScanBinding
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_scan)
+
+//        val requestPermissionLauncher =
+//                registerForActivityResult(ActivityResultContracts.RequestPermission()
+//                ) { isGranted: Boolean ->
+//                    if (isGranted) {
+//                        // Permission is granted. Continue the action or workflow in your
+//                        // app.
+//                    } else {
+//                        // Explain to the user that the feature is unavailable because the
+//                        // features requires a permission that the user has denied. At the
+//                        // same time, respect the user's decision. Don't link to system
+//                        // settings in an effort to convince the user to change their
+//                        // decision.
+//                    }
+//                }
 
         // TODO: Put this in MainApplication?
         // If BLE support isn't there, quit the app
@@ -54,12 +70,12 @@ class DeviceScanActivity : Activity(),
     // Check for BLE support - also checked from Android manifest.
     private fun checkBluetoothSupport() {
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            exitApp("No BLE Support...")
+            exitApp("Missing FEATURE_BLUETOOTH_LE Support...")
         }
 
         val btAdapter = BluetoothAdapter.getDefaultAdapter()
         if (btAdapter == null) {
-            exitApp("No BLE Support...")
+            exitApp("No BLE Support (getDefaultAdapter)... ")
         }
 
 
@@ -80,8 +96,7 @@ class DeviceScanActivity : Activity(),
     }
 
     companion object {
-        private val REQ_BLUETOOTH_ENABLE = 1000
-
+        private const val REQ_BLUETOOTH_ENABLE = 1000
     }
 
     override fun scanning() {
