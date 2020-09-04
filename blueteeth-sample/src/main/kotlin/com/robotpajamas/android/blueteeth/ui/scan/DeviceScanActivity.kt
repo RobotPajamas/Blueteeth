@@ -1,21 +1,25 @@
 package com.robotpajamas.android.blueteeth.ui.scan
 
-import android.app.Activity
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.robotpajamas.android.blueteeth.R
 import com.robotpajamas.android.blueteeth.databinding.ActivityScanBinding
 import com.robotpajamas.android.blueteeth.ui.device.DeviceActivity
 import com.robotpajamas.android.blueteeth.ui.widgets.recyclers.RecyclerItemClickListener
 import com.robotpajamas.blueteeth.Blueteeth
+import timber.log.Timber
 
-class DeviceScanActivity : Activity(),
+class DeviceScanActivity : AppCompatActivity(),
         DeviceScanViewModel.StateHandler,
         DeviceScanViewModel.Navigator {
 
@@ -30,25 +34,25 @@ class DeviceScanActivity : Activity(),
 
     private lateinit var binding: ActivityScanBinding
 
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission is granted. Continue the action or workflow in your
+            // app.
+            Timber.d("Permission was granted")
+        } else {
+            // Explain to the user that the feature is unavailable because the
+            // features requires a permission that the user has denied. At the
+            // same time, respect the user's decision. Don't link to system
+            // settings in an effort to convince the user to change their
+            // decision.
+            Timber.d("Permission was not granted")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_scan)
 
-//        val requestPermissionLauncher =
-//                registerForActivityResult(ActivityResultContracts.RequestPermission()
-//                ) { isGranted: Boolean ->
-//                    if (isGranted) {
-//                        // Permission is granted. Continue the action or workflow in your
-//                        // app.
-//                    } else {
-//                        // Explain to the user that the feature is unavailable because the
-//                        // features requires a permission that the user has denied. At the
-//                        // same time, respect the user's decision. Don't link to system
-//                        // settings in an effort to convince the user to change their
-//                        // decision.
-//                    }
-//                }
 
         // TODO: Put this in MainApplication?
         // If BLE support isn't there, quit the app
@@ -60,6 +64,22 @@ class DeviceScanActivity : Activity(),
         binding.devices.adapter = DeviceScanAdapter()
         binding.devices.addOnItemTouchListener(touchListener)
         binding.swiperefresh.setOnRefreshListener { vm.startScan() }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return
+        }
+
+        when(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            PackageManager.PERMISSION_GRANTED -> {
+
+            }
+            PackageManager.PERMISSION_DENIED -> {
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+        }
     }
 
     override fun onPause() {

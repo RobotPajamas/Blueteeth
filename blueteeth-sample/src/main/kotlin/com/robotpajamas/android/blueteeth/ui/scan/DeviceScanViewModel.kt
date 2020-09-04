@@ -6,10 +6,11 @@ import com.robotpajamas.blueteeth.Blueteeth
 import com.robotpajamas.blueteeth.BlueteethDevice
 import com.robotpajamas.blueteeth.listeners.OnScanCompletedListener
 import com.robotpajamas.android.blueteeth.BR
+import timber.log.Timber
 
 class DeviceScanViewModel(private val stateHandler: StateHandler, private val navigator: Navigator) : BaseObservable() {
 
-    private val DEVICE_SCAN_MILLISECONDS = 2000
+    private val DEVICE_SCAN_MILLISECONDS = 3000
 
     interface StateHandler {
         fun scanning()
@@ -29,10 +30,12 @@ class DeviceScanViewModel(private val stateHandler: StateHandler, private val na
 
     fun startScan() {
         stateHandler.scanning()
-        Blueteeth.scanForPeripherals(DEVICE_SCAN_MILLISECONDS, OnScanCompletedListener { bleDevices ->
+        Blueteeth.scanForPeripherals(DEVICE_SCAN_MILLISECONDS) { bleDevices ->
+            Timber.d("Returned ${bleDevices.size} not unique devices after scanning for $DEVICE_SCAN_MILLISECONDS ms")
             devices = bleDevices.filter { it.name.isNotBlank() }.distinctBy { it.id }.map { ScannedDeviceViewModel(it.name, it.id) }
+            Timber.d("Filtered to ${devices.size} unique devices with a non-blank name")
             stateHandler.notScanning()
-        })
+        }
     }
 
     fun stopScan() {

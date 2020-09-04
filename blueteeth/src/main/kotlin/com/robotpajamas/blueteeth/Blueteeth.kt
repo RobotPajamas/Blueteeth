@@ -3,6 +3,8 @@ package com.robotpajamas.blueteeth
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.Handler
 
@@ -152,6 +154,7 @@ object Blueteeth {
         BLog.d("scanForPeripherals")
         clearPeripherals()
         isScanning = true
+//        mBLEAdapter?.bluetoothLeScanner?.startScan(scanCallback)
         mBLEAdapter?.startLeScan(mBLEScanCallback)
     }
 
@@ -175,6 +178,13 @@ object Blueteeth {
         mOnScanCompletedListener = null
         mOnDeviceDiscoveredListener = null
     }
+
+//    private val scanCallback = object: ScanCallback() {
+//        override fun onScanResult(callbackType: Int, result: ScanResult?) {
+//            super.onScanResult(callbackType, result)
+//            print("HERE: $result")
+//        }
+//    }
 
     private val mBLEScanCallback = BluetoothAdapter.LeScanCallback { device, rssi, scanRecord ->
         val blueteethDevice = BlueteethDevice(mContext!!, device, rssi, scanRecord)
