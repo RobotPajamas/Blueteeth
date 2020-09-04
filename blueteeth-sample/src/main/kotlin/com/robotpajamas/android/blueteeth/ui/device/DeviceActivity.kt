@@ -1,7 +1,7 @@
 package com.robotpajamas.android.blueteeth.ui.device
 
 import android.app.Activity
-import android.databinding.DataBindingUtil
+import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import com.robotpajamas.android.blueteeth.R
 import com.robotpajamas.android.blueteeth.databinding.ActivityDeviceBinding
@@ -20,12 +20,6 @@ class DeviceActivity : Activity(),
         binding = DataBindingUtil.setContentView(this, R.layout.activity_device)
         binding.vm = vm
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-//        mSamplePeripheral?.close()
-    }
-
 
     override fun navigateBack() {
 

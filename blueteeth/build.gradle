@@ -31,12 +31,11 @@ ext {
 }
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 22
+        targetSdkVersion 30
         versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
     }
@@ -55,10 +54,10 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:support-annotations:27.1.1'
+    implementation 'androidx.annotation:annotation:1.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api "com.robotpajamas.dispatcher:dispatcher:0.3.1"
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
 }
 
 if (project.rootProject.file('local.properties').exists()) {
