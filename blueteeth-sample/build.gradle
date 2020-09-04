@@ -7,14 +7,18 @@ def versionMinor = 0
 def versionPatch = 1
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.robotpajamas.android.blueteeth"
         minSdkVersion 21
-        targetSdkVersion 22
+        targetSdkVersion 30
         versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
+    }
+
+    buildFeatures {
+        dataBinding true
     }
 
     buildTypes {
@@ -22,10 +26,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-
-    dataBinding {
-        enabled = true
     }
 
     sourceSets {
@@ -36,7 +36,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    kapt "com.android.databinding:compiler:$android_tools"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     implementation 'com.android.support:appcompat-v7:27.1.1'

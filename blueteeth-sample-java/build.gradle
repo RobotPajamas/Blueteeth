@@ -5,13 +5,12 @@ def versionMinor = 0
 def versionPatch = 1
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.robotpajamas.android.blueteeth.java"
         minSdkVersion 21
-        targetSdkVersion 22
+        targetSdkVersion 30
         versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
     }
