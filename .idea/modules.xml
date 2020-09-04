@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Blueteeth.iml" filepath="$PROJECT_DIR$/Blueteeth.iml" />
-      <module fileurl="file://$PROJECT_DIR$/blueteeth/blueteeth.iml" filepath="$PROJECT_DIR$/blueteeth/blueteeth.iml" />
-      <module fileurl="file://$PROJECT_DIR$/blueteeth-sample/blueteeth-sample.iml" filepath="$PROJECT_DIR$/blueteeth-sample/blueteeth-sample.iml" />
-      <module fileurl="file://$PROJECT_DIR$/blueteeth-sample-java/blueteeth-sample-java.iml" filepath="$PROJECT_DIR$/blueteeth-sample-java/blueteeth-sample-java.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/blueteeth.iml" filepath="$PROJECT_DIR$/.idea/modules/blueteeth.iml" group="blueteeth" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/blueteeth/blueteeth-blueteeth.iml" filepath="$PROJECT_DIR$/.idea/modules/blueteeth/blueteeth-blueteeth.iml" group="blueteeth/blueteeth" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/blueteeth-sample/blueteeth-sample.iml" filepath="$PROJECT_DIR$/.idea/modules/blueteeth-sample/blueteeth-sample.iml" group="blueteeth/blueteeth-sample" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/blueteeth-sample-java/blueteeth-sample-java.iml" filepath="$PROJECT_DIR$/.idea/modules/blueteeth-sample-java/blueteeth-sample-java.iml" group="blueteeth/blueteeth-sample-java" />
     </modules>
   </component>
 </project>

@@ -1,7 +1,7 @@
 package com.robotpajamas.android.blueteeth.ui.device
 
-import android.databinding.BaseObservable
-import android.databinding.Bindable
+import androidx.databinding.BaseObservable
+import androidx.databinding.Bindable
 import com.robotpajamas.android.blueteeth.BR
 import com.robotpajamas.android.blueteeth.extensions.prepend
 import com.robotpajamas.blueteeth.Blueteeth
