@@ -1,7 +1,7 @@
 package com.robotpajamas.android.blueteeth.ui.scan
 
-import android.databinding.BaseObservable
-import android.databinding.Bindable
+import androidx.databinding.BaseObservable
+import androidx.databinding.Bindable
 import com.robotpajamas.blueteeth.Blueteeth
 import com.robotpajamas.blueteeth.BlueteethDevice
 import com.robotpajamas.blueteeth.listeners.OnScanCompletedListener
