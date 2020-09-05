@@ -10,9 +10,11 @@ import com.robotpajamas.blueteeth.models.Writable
 import java.nio.charset.Charset
 import java.util.*
 
-class DeviceViewModel(private var macAddress: String,
-                      private val navigator: Navigator,
-                      private var device: BlueteethDevice = Blueteeth.getPeripheral(macAddress)) : BaseObservable() {
+class DeviceViewModel(
+    private var macAddress: String,
+    private val navigator: Navigator,
+    private var device: BlueteethDevice = Blueteeth.getPeripheral(macAddress)
+) : BaseObservable() {
 
     private val serviceUuid = UUID.fromString("00726f62-6f74-7061-6a61-6d61732e6361")
     private val txUuid = UUID.fromString("01726f62-6f74-7061-6a61-6d61732e6361")
@@ -55,7 +57,8 @@ class DeviceViewModel(private var macAddress: String,
 
     fun read() {
         device.read(rxUuid, serviceUuid) { result ->
-            text = text.prepend("Read result: ${result.value?.toString(Charset.defaultCharset())}\n")
+            text =
+                text.prepend("Read result: ${result.value?.toString(Charset.defaultCharset())}\n")
             text = text.prepend("Read result: ${result.value?.contentToString()}\n")
         }
     }
